@@ -1,0 +1,2734 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quietly, Nap Time - 互動繪本</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Comic Sans MS', 'Trebuchet MS', sans-serif;
+    background: linear-gradient(135deg, #e8deff 0%, #c9b6e8 50%, #aec9f5 100%);
+    min-height: 100vh;
+    padding: 20px;
+    color: #333;
+  }
+
+  h1 {
+    text-align: center;
+    color: #6a4c93;
+    font-size: 2.5em;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .subtitle { text-align: center; color: #555; margin-bottom: 20px; font-size: 1.1em; }
+
+  .mode-switcher {
+    display: flex; justify-content: center; gap: 10px;
+    margin-bottom: 25px; flex-wrap: wrap;
+  }
+
+  .mode-btn {
+    padding: 12px 22px; font-size: 1.05em; font-weight: bold;
+    border: none; border-radius: 50px; cursor: pointer;
+    background: white; color: #555;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    transition: all 0.25s; font-family: inherit;
+  }
+
+  .mode-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.2); }
+
+  .mode-btn.active {
+    background: linear-gradient(135deg, #6a4c93, #9d80c4);
+    color: white; transform: translateY(-2px);
+  }
+  /* Home button — links back to ../index.html, styled like mode-btn but distinct */
+  .home-btn {
+    padding: 12px 22px;
+    font-size: 1.05em;
+    font-weight: bold;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    background: #F4EBD8;
+    color: #6B5A3F;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    transition: all 0.25s;
+    font-family: inherit;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .home-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+    background: #EADFC5;
+    color: #4A3520;
+  }
+
+
+  .mode-content { display: none; max-width: 1000px; margin: 0 auto; }
+  .mode-content.active { display: block; }
+
+  /* ------------- MODE 1: Story ------------- */
+  .story-container {
+    background: white; border-radius: 24px; padding: 30px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12); text-align: center;
+  }
+
+  .page-indicator { font-size: 1.3em; font-weight: bold; color: #6a4c93; margin-bottom: 15px; }
+
+  .story-image-wrap {
+    position: relative; display: inline-block; max-width: 100%;
+    border-radius: 16px; overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+
+  .story-image { display: block; max-width: 100%; max-height: 60vh; height: auto; }
+
+  .page-title {
+    margin-top: 20px; font-size: 1.4em; font-weight: bold;
+    color: #6a4c93; letter-spacing: 1px;
+  }
+
+  .narration {
+    margin: 15px auto 5px; max-width: 750px;
+    padding: 18px 22px;
+    background: linear-gradient(135deg, #f5f0fa, #ede3f5);
+    border-left: 6px solid #9d80c4;
+    border-radius: 12px; text-align: left;
+    font-size: 1.08em; line-height: 1.9; color: #444;
+    box-shadow: inset 0 0 0 1px rgba(157,128,196,0.15);
+  }
+
+  .narration .en {
+    color: #1976d2; font-weight: bold;
+    background: #e3f2fd; padding: 1px 6px; border-radius: 6px;
+  }
+
+  .narration .zh-trans { color: #777; font-size: 0.95em; }
+
+  .speaker-controls {
+    margin-top: 18px; display: flex; gap: 12px;
+    justify-content: center; flex-wrap: wrap; align-items: center;
+  }
+
+  .speaker-btn {
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    color: white; border: none; width: 80px; height: 80px;
+    border-radius: 50%; font-size: 2.2em; cursor: pointer;
+    box-shadow: 0 4px 12px rgba(79,172,254,0.5);
+    transition: all 0.2s; display: flex; align-items: center; justify-content: center;
+  }
+
+  .speaker-btn:hover { transform: scale(1.1); }
+  .speaker-btn:active { transform: scale(0.95); }
+  .speaker-btn.playing { animation: pulse 1s infinite; }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 4px 12px rgba(79,172,254,0.5); }
+    50% { box-shadow: 0 4px 24px rgba(79,172,254,0.9); transform: scale(1.05); }
+  }
+
+  .speaker-btn.secondary { background: linear-gradient(135deg, #f093fb, #f5576c); }
+
+  .speaker-btn.primary-narrate {
+    width: auto; height: 64px; padding: 0 26px;
+    border-radius: 32px; font-size: 1.15em; font-weight: bold;
+    background: linear-gradient(135deg, #6a4c93, #7b5fa8);
+    box-shadow: 0 4px 14px rgba(106,76,147,0.5); gap: 8px;
+  }
+
+  .speaker-btn.primary-narrate.playing { animation: narratePulse 1.2s infinite; }
+
+  @keyframes narratePulse {
+    0%, 100% { box-shadow: 0 4px 14px rgba(106,76,147,0.5); transform: scale(1); }
+    50% { box-shadow: 0 6px 22px rgba(123,95,168,0.9); transform: scale(1.04); }
+  }
+
+  .english-audio-label { color: #777; font-size: 0.9em; margin-right: 4px; }
+
+  .nav-controls {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 25px; gap: 10px;
+  }
+
+  .nav-btn {
+    padding: 12px 28px;
+    background: linear-gradient(135deg, #66bb6a, #43a047);
+    color: white; border: none; border-radius: 50px;
+    font-size: 1.1em; font-weight: bold; cursor: pointer; font-family: inherit;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15); transition: all 0.2s;
+  }
+
+  .nav-btn:hover:not(:disabled) { transform: translateY(-2px); }
+  .nav-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ------------- MODE 2: Card Sorting ------------- */
+  .game-container {
+    background: white; border-radius: 24px; padding: 25px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  }
+
+  .game-instruction { text-align: center; font-size: 1.2em; color: #555; margin-bottom: 20px; }
+
+  .game-area {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px; min-height: 200px; padding: 15px;
+    background: #f6f0fc; border-radius: 16px; border: 3px dashed #9d80c4;
+  }
+
+  .card {
+    aspect-ratio: 1 / 1; background: #fff; border-radius: 12px;
+    overflow: hidden; cursor: grab; position: relative;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+    transition: transform 0.2s, box-shadow 0.2s; user-select: none;
+  }
+
+  .card:hover { transform: translateY(-4px); box-shadow: 0 6px 14px rgba(0,0,0,0.22); }
+  .card.dragging { opacity: 0.5; cursor: grabbing; }
+  .card.drag-over { transform: scale(1.05); box-shadow: 0 0 0 4px #4facfe; }
+
+  .card img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+
+  .card-number {
+    position: absolute; top: 6px; left: 6px;
+    background: rgba(0,0,0,0.6); color: white;
+    padding: 4px 10px; border-radius: 12px; font-weight: bold; font-size: 0.9em;
+  }
+
+  .card.correct { box-shadow: 0 0 0 4px #4caf50; }
+  .card.incorrect { box-shadow: 0 0 0 4px #f44336; }
+
+  .game-controls { display: flex; justify-content: center; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+
+  .game-btn {
+    padding: 12px 24px; border: none; border-radius: 50px;
+    font-size: 1.05em; font-weight: bold; cursor: pointer;
+    font-family: inherit; color: white;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15); transition: transform 0.15s;
+  }
+
+  .game-btn:hover { transform: translateY(-2px); }
+  .game-btn.shuffle { background: linear-gradient(135deg, #9d80c4, #6a4c93); }
+  .game-btn.check { background: linear-gradient(135deg, #42a5f5, #1e88e5); }
+  .game-btn.reset { background: linear-gradient(135deg, #ab47bc, #8e24aa); }
+
+  .game-result { text-align: center; margin-top: 15px; font-size: 1.3em; font-weight: bold; min-height: 1.5em; }
+  .result-success { color: #4caf50; }
+  .result-fail { color: #f44336; }
+
+    /* ------------- MODE 2: Sentence Sort ------------- */
+  .sentence-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+  .sentence-tab {
+    padding: 8px 18px;
+    border: 2px solid #ffa726;
+    background: white;
+    color: #ff7043;
+    border-radius: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.95em;
+    transition: transform 0.15s;
+  }
+  .sentence-tab:hover { transform: translateY(-1px); }
+  .sentence-tab.active {
+    background: linear-gradient(135deg, #ffa726, #ff7043);
+    color: white;
+    border-color: transparent;
+  }
+
+  .sentence-zone {
+    background: #fff5e6;
+    border: 3px dashed #ffa726;
+    border-radius: 16px;
+    padding: 18px;
+  }
+  .sentence-target {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    min-height: 76px;
+    padding: 14px;
+    background: white;
+    border-radius: 12px;
+    margin-bottom: 14px;
+  }
+  .sentence-slot {
+    min-width: 78px;
+    height: 56px;
+    border: 2px dashed #ddd;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fafafa;
+    transition: background 0.2s, border-color 0.2s;
+    padding: 0 6px;
+  }
+  .sentence-slot.over { background: #fff3e0; border-color: #ff7043; border-style: solid; }
+  .sentence-slot.correct { border-style: solid; border-color: #4caf50; background: #e8f5e9; }
+  .sentence-slot.incorrect { border-style: solid; border-color: #f44336; background: #ffebee; }
+
+  .sentence-bank-label {
+    text-align: center;
+    color: #999;
+    font-size: 0.92em;
+    margin: 6px 0 8px;
+  }
+  .sentence-bank {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    min-height: 64px;
+    padding: 12px;
+    background: white;
+    border-radius: 12px;
+  }
+  .sentence-bank.over { background: #fff3e0; }
+
+  .sentence-tile {
+    padding: 10px 18px;
+    background: linear-gradient(135deg, #66bb6a, #43a047);
+    color: white;
+    border-radius: 28px;
+    font-weight: bold;
+    cursor: grab;
+    font-size: 1.05em;
+    user-select: none;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.18);
+    transition: transform 0.15s, box-shadow 0.15s;
+    touch-action: none;
+  }
+  .sentence-tile:hover { transform: translateY(-2px); box-shadow: 0 5px 12px rgba(0,0,0,0.22); }
+  .sentence-tile:active { cursor: grabbing; }
+  .sentence-tile.dragging { opacity: 0.4; }
+  .sentence-tile.in-slot {
+    background: linear-gradient(135deg, #42a5f5, #1e88e5);
+    cursor: pointer;
+  }
+
+  @media (max-width: 600px) {
+    .sentence-tile { padding: 8px 14px; font-size: 1em; }
+    .sentence-slot { min-width: 60px; height: 46px; }
+    .sentence-tab  { padding: 6px 12px; font-size: 0.88em; }
+  }
+
+  /* ------------- MODE 3: Theme Song with Karaoke ------------- */
+  .song-container {
+    background: white; border-radius: 24px; padding: 30px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  }
+
+  .song-header { text-align: center; margin-bottom: 20px; }
+  .song-title { font-size: 2em; color: #6a4c93; margin-bottom: 8px; }
+
+  .audio-player {
+    background: linear-gradient(135deg, #9d80c4, #6a4c93);
+    border-radius: 20px; padding: 20px; margin-bottom: 25px;
+  }
+
+  .audio-player audio { width: 100%; border-radius: 12px; }
+
+  .karaoke-hint { text-align: center; color: #fff; font-size: 0.9em; margin-top: 8px; opacity: 0.9; }
+
+  .lyrics {
+    background: #f5f0fa; border-radius: 16px; padding: 25px;
+    font-size: 1.1em; line-height: 1.9;
+  }
+
+  .verse {
+    margin-bottom: 20px; padding: 15px;
+    border-left: 5px solid #9d80c4; background: white;
+    border-radius: 10px; transition: all 0.3s;
+  }
+
+  .verse.active-verse {
+    border-left-color: #6a4c93; background: #ece2f5;
+    box-shadow: 0 4px 12px rgba(106,76,147,0.25);
+    transform: translateX(5px);
+  }
+
+  .verse-title { font-weight: bold; color: #6a4c93; margin-bottom: 8px; font-size: 1.05em; }
+
+  .verse-line {
+    margin-left: 15px; color: #444;
+    padding: 4px 10px; border-radius: 8px; cursor: pointer;
+    transition: all 0.25s;
+  }
+
+  .verse-line:hover { background: #fff3e0; }
+
+  .verse-line.active-line {
+    background: linear-gradient(135deg, #ffd54f, #ffb300);
+    color: #333; font-weight: bold;
+    transform: scale(1.08); transform-origin: left;
+    box-shadow: 0 2px 8px rgba(185,155,230,0.5);
+  }
+
+  .verse-action {
+    color: #7e57c2; font-style: italic; font-size: 0.95em;
+    margin-left: 15px; margin-top: 4px;
+  }
+
+  /* ------------- MODE: Teacher Podcast ------------- */
+  .teacher-container {
+    background: white; border-radius: 24px; padding: 35px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12); text-align: center;
+  }
+
+  .teacher-avatar { font-size: 5em; margin-bottom: 10px; animation: wiggle 3s ease-in-out infinite; }
+  @keyframes wiggle {
+    0%, 100% { transform: rotate(-5deg); }
+    50% { transform: rotate(5deg); }
+  }
+
+  .teacher-title { font-size: 2em; color: #6a4c93; font-weight: bold; margin-bottom: 8px; }
+  .teacher-subtitle { color: #777; margin-bottom: 25px; font-size: 1.05em; }
+
+  .teacher-audio-box {
+    background: linear-gradient(135deg, #e5d6f2, #c2a8d5);
+    border-radius: 20px; padding: 25px; margin-bottom: 20px;
+  }
+
+  .teacher-audio-box audio { width: 100%; border-radius: 12px; }
+
+  .teacher-note {
+    background: #f5f0fa; border-left: 5px solid #9d80c4;
+    border-radius: 10px; padding: 15px 20px;
+    text-align: left; color: #555; line-height: 1.8;
+  }
+
+  /* ------------- MODE: Parent-Child Dialogue ------------- */
+  .dialogue-container {
+    background: white; border-radius: 24px; padding: 25px 30px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  }
+
+  .dialogue-top {
+    display: flex; gap: 20px; align-items: flex-start;
+    flex-wrap: wrap; margin-bottom: 18px;
+  }
+
+  .dialogue-thumb {
+    flex: 0 0 180px; max-width: 180px;
+    aspect-ratio: 1 / 1; border-radius: 14px;
+    overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.18);
+  }
+
+  .dialogue-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+  .dialogue-header { flex: 1; min-width: 220px; }
+
+  .dialogue-title { font-size: 1.35em; color: #6a4c93; font-weight: bold; margin-bottom: 8px; }
+
+  .dialogue-scene {
+    display: inline-block;
+    background: linear-gradient(135deg, #b2ebf2, #80deea);
+    color: #006064; padding: 5px 12px; border-radius: 12px;
+    font-size: 0.92em; font-weight: bold; margin-bottom: 6px;
+  }
+
+  .dialogue-role { color: #555; font-size: 0.98em; line-height: 1.55; }
+
+  .dialogue-script { background: #fafafa; border-radius: 14px; padding: 18px; margin: 15px 0; }
+
+  .dialogue-line {
+    display: flex; align-items: flex-start; gap: 10px;
+    margin-bottom: 12px; padding: 10px 14px;
+    border-radius: 12px; line-height: 1.7;
+  }
+
+  .dialogue-line:last-child { margin-bottom: 0; }
+  .dialogue-line.parent { background: #e8f5e9; border-left: 4px solid #66bb6a; }
+  .dialogue-line.child { background: #fce4ec; border-left: 4px solid #ec407a; }
+
+  .dialogue-avatar { flex: 0 0 auto; font-size: 1.6em; line-height: 1; }
+  .dialogue-body { flex: 1; }
+  .dialogue-speaker { font-weight: bold; color: #444; font-size: 0.92em; margin-bottom: 3px; }
+  .dialogue-zh { color: #333; }
+
+  .dialogue-en {
+    display: inline-block; margin-top: 4px; padding: 2px 10px;
+    background: #e3f2fd; color: #1565c0;
+    border-radius: 8px; font-weight: bold;
+  }
+
+  .dialogue-tip {
+    background: linear-gradient(135deg, #f5f0fa, #e0d0f0);
+    border-radius: 12px; padding: 14px 18px;
+    color: #5d4037; line-height: 1.75; font-size: 0.98em;
+  }
+
+  .dialogue-tip strong { color: #e65100; }
+
+  @media (max-width: 600px) {
+    .dialogue-thumb { flex: 0 0 100%; max-width: 100%; aspect-ratio: 16 / 10; }
+  }
+
+  /* ------------- MODE 4: Listening Cards ------------- */
+  .listen-container {
+    background: white; border-radius: 24px; padding: 25px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  }
+
+  .listen-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 14px;
+  }
+
+  .listen-card {
+    aspect-ratio: 1 / 1; background: #fff; border-radius: 14px;
+    overflow: hidden; cursor: pointer; position: relative;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .listen-card:hover { transform: translateY(-5px) scale(1.02); box-shadow: 0 8px 18px rgba(0,0,0,0.25); }
+  .listen-card img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+
+  .listen-card-label {
+    position: absolute; top: 8px; left: 8px;
+    background: rgba(106,76,147,0.92); color: white;
+    padding: 5px 12px; border-radius: 14px;
+    font-weight: bold; font-size: 0.95em;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+
+  .listen-card-speaker {
+    position: absolute; bottom: 10px; right: 10px;
+    background: rgba(79,172,254,0.92); color: white;
+    width: 40px; height: 40px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3em; box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    transition: transform 0.2s;
+  }
+
+  .listen-card:hover .listen-card-speaker { transform: scale(1.15); }
+
+  .listen-card.playing {
+    z-index: 10;
+    animation: cardZoomPulse 1.3s ease-in-out infinite;
+  }
+
+  .listen-card.playing .listen-card-speaker {
+    background: #6a4c93; animation: pulse 0.9s infinite;
+  }
+
+  @keyframes cardZoomPulse {
+    0%   { transform: scale(1.15); box-shadow: 0 0 0 5px #4facfe, 0 12px 28px rgba(79,172,254,0.5); }
+    50%  { transform: scale(1.25); box-shadow: 0 0 0 9px #00f2fe, 0 18px 44px rgba(0,242,254,0.7); }
+    100% { transform: scale(1.15); box-shadow: 0 0 0 5px #4facfe, 0 12px 28px rgba(79,172,254,0.5); }
+  }
+
+  .listen-card.playing.pop-in {
+    animation: cardPopIn 0.35s ease-out, cardZoomPulse 1.3s ease-in-out 0.35s infinite;
+  }
+
+  @keyframes cardPopIn {
+    0%   { transform: scale(1); }
+    60%  { transform: scale(1.32); }
+    100% { transform: scale(1.15); }
+  }
+
+  @media (max-width: 600px) {
+    h1 { font-size: 1.8em; }
+    .mode-btn { padding: 9px 14px; font-size: 0.95em; }
+    .speaker-btn { width: 60px; height: 60px; font-size: 1.6em; }
+    .game-area { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
+    .listen-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+    .listen-card-speaker { width: 32px; height: 32px; font-size: 1em; }
+  }
+
+  /* ============ MODE: TIC-TAC-TOE VOCABULARY ============ */
+  .ttt-container { background:white; border-radius:24px; padding:30px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.12); text-align:center; }
+  .ttt-instruction { font-size:1.1em; color:#555; margin-bottom:14px; line-height:1.55; }
+  .ttt-players { display:flex; justify-content:center; gap:18px;
+    margin-bottom:18px; flex-wrap:wrap; }
+  .ttt-player { padding:10px 20px; border-radius:16px; background:#f5f5f5;
+    font-weight:bold; font-size:1.05em; color:#666;
+    border:3px solid transparent; transition:all 0.2s; }
+  .ttt-player.active { background:linear-gradient(135deg,#d9c6ed,#bda4d9);
+    border-color:#6a4c93; color:#3e2270; transform:scale(1.06); }
+  .ttt-player.active.p2 { background:linear-gradient(135deg,#d4f2d0,#a6ea9e);
+    border-color:#66bb6a; color:#2e7d32; }
+  .ttt-board { display:grid; grid-template-columns:repeat(3,1fr); gap:10px;
+    max-width:480px; margin:0 auto 16px; }
+  .ttt-cell { aspect-ratio:1/1;
+    background:linear-gradient(135deg,#f6f0fa 0%,#e5d6f2 100%);
+    border:3px solid #b9a3e0; border-radius:18px;
+    cursor:pointer; display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    position:relative; padding:6px;
+    transition:transform 0.15s, box-shadow 0.2s; overflow:hidden; }
+  .ttt-cell:hover:not(.claimed) { transform:translateY(-3px) scale(1.03);
+    box-shadow:0 6px 14px rgba(0,0,0,0.15); }
+  .ttt-cell .word-en { font-size:1.1em; font-weight:bold; color:#4a2c7a; line-height:1.15; }
+  .ttt-cell .word-cn { font-size:0.82em; color:#6b4b8a; margin-top:3px; }
+  .ttt-cell.claimed { cursor:default; }
+  .ttt-cell .mark { position:absolute; top:50%; left:50%;
+    transform:translate(-50%,-50%); font-size:3.8em; font-weight:900;
+    pointer-events:none; animation:ttt-pop 0.35s ease-out;
+    text-shadow:2px 2px 0 rgba(255,255,255,0.7); }
+  .ttt-cell .mark.p1 { color:#ff5252; }
+  .ttt-cell .mark.p2 { color:#43a047; }
+  .ttt-cell.claimed .word-en, .ttt-cell.claimed .word-cn { opacity:0.3; }
+  .ttt-cell.win { background:linear-gradient(135deg,#c8f7c5 0%,#a6eaa1 100%);
+    border-color:#66bb6a; animation:ttt-winpulse 0.9s ease-out 2; }
+  @keyframes ttt-pop {
+    0% { transform:translate(-50%,-50%) scale(0.1); opacity:0; }
+    80% { transform:translate(-50%,-50%) scale(1.15); opacity:1; }
+    100% { transform:translate(-50%,-50%) scale(1); } }
+  @keyframes ttt-winpulse {
+    0%,100% { box-shadow:0 0 0 0 rgba(102,187,106,0.6); }
+    50% { box-shadow:0 0 18px 4px rgba(102,187,106,0.8); } }
+  .ttt-controls { display:flex; justify-content:center; gap:12px;
+    flex-wrap:wrap; margin-top:10px; }
+  .ttt-btn { padding:12px 24px; border:none; border-radius:50px;
+    font-size:1em; font-weight:bold; cursor:pointer; font-family:inherit;
+    color:white; box-shadow:0 3px 6px rgba(0,0,0,0.15);
+    transition:transform 0.15s; }
+  .ttt-btn:hover { transform:translateY(-2px); }
+  .ttt-btn.reset { background:linear-gradient(135deg,#4facfe,#00f2fe); }
+  .ttt-btn.reshuffle { background:linear-gradient(135deg,#6a4c93,#9d80c4); }
+  .ttt-status { font-size:1.2em; font-weight:bold; margin-top:14px;
+    min-height:1.4em; color:#555; }
+  .ttt-status.win-p1 { color:#3e2270; }
+  .ttt-status.win-p2 { color:#2e7d32; }
+  .ttt-status.draw { color:#888; }
+
+  /* ============ MODE: PARENT-CHILD MISSIONS ============ */
+  .parent-container { background:white; border-radius:24px; padding:30px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.12); }
+  .parent-intro {
+    background:linear-gradient(135deg,#f5eff9 0%,#e0d0f0 100%);
+    border-left:6px solid #6a4c93; border-radius:14px;
+    padding:18px 22px; margin-bottom:22px;
+    font-size:0.98em; line-height:1.65; color:#5a3f20; }
+  .parent-intro strong { color:#3e2270; }
+  .mission-card { border-radius:18px; margin-bottom:18px; overflow:hidden;
+    box-shadow:0 3px 10px rgba(0,0,0,0.08); border:1px solid #eee; }
+  .mission-head { padding:16px 22px; display:flex; align-items:center;
+    gap:14px; cursor:pointer; color:white; font-weight:bold;
+    user-select:none; transition:filter 0.2s; }
+  .mission-head:hover { filter:brightness(1.06); }
+  .mission-head .num { width:34px; height:34px; background:white;
+    color:inherit; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:900; font-size:1.15em; flex-shrink:0; }
+  .mission-head .titles { flex:1; line-height:1.3; }
+  .mission-head .title-cn { font-size:1.08em; }
+  .mission-head .title-en { font-size:0.82em; font-style:italic;
+    font-weight:normal; opacity:0.9; display:block; margin-top:2px; }
+  .mission-head .arrow { font-size:1.4em; transition:transform 0.25s; }
+  .mission-card.open .mission-head .arrow { transform:rotate(180deg); }
+  .mission-body { max-height:0; overflow:hidden;
+    transition:max-height 0.35s ease; background:#f7f3fc; }
+  .mission-card.open .mission-body { max-height:900px; }
+  .mission-section { padding:14px 22px; border-top:1px solid #ebe0f0; }
+  .mission-section:first-child { border-top:none; }
+  .ms-label { display:inline-block; padding:4px 12px; border-radius:14px;
+    color:white; font-size:0.82em; font-weight:bold; margin-bottom:8px; }
+  .ms-label.why { background:#5aa8d6; }
+  .ms-label.how { background:#7bbf6a; }
+  .ms-label.stuck { background:#ec6b8a; }
+  .ms-label.cheer { background:#b699d8; }
+  .ms-body { font-size:0.96em; line-height:1.65; color:#333; }
+
+  .dialogue-box { background:#f4edfa; border:2px dashed #b699d8;
+    border-radius:16px; padding:18px 20px; margin-top:20px; }
+  .dialogue-box h3 { color:#5a4080; margin-bottom:4px; font-size:1.1em; }
+  .dialogue-box .sub { font-size:0.85em; color:#999;
+    font-style:italic; margin-bottom:12px; }
+  .dialogue-lines .dialogue-line { display:flex; gap:10px; padding:8px 4px;
+    border-bottom:1px dashed #e0d5ea; font-size:0.93em; line-height:1.5; }
+  .dialogue-lines .dialogue-line:last-child { border-bottom:none; }
+  .dialogue-lines .who { color:#3e2270; font-weight:bold; min-width:50px; flex-shrink:0; }
+  .dialogue-lines .line { flex:1; color:#333; font-weight:500; }
+  .dialogue-lines .cue { color:#999; font-size:0.88em; min-width:160px; text-align:right; }
+
+  .tracker-box { background:#f5eff9; border:2px solid #b699d8;
+    border-radius:16px; padding:18px 20px; margin-top:20px; }
+  .tracker-box h3 { color:#5a4080; margin-bottom:4px; font-size:1.1em; }
+  .tracker-box .sub { font-size:0.85em; color:#999;
+    font-style:italic; margin-bottom:14px; }
+  .tracker-grid { display:grid;
+    grid-template-columns:minmax(140px,1.6fr) repeat(7,1fr);
+    gap:6px; align-items:center; font-size:0.88em; }
+  .tracker-grid .day-head { text-align:center; font-weight:bold; color:#888; padding:4px 0; }
+  .tracker-grid .row-label { padding:5px 4px; color:#333; line-height:1.35; }
+  .tracker-check { width:22px; height:22px; border:2px solid #ccc;
+    border-radius:5px; background:white; cursor:pointer;
+    margin:0 auto; display:block; transition:all 0.15s; }
+  .tracker-check:hover { border-color:#b699d8; }
+  .tracker-check.checked { background:#b699d8; border-color:#5a4080; position:relative; }
+  .tracker-check.checked::after { content:'✓'; position:absolute;
+    top:50%; left:50%; transform:translate(-50%,-55%);
+    color:white; font-weight:900; font-size:1em; }
+
+  .reflect-box { background:#faf7f3; border:2px solid #8d6e63;
+    border-radius:16px; padding:18px 20px; margin-top:20px; }
+  .reflect-box h3 { color:#6d4c41; margin-bottom:4px; font-size:1.1em; }
+  .reflect-box .sub { font-size:0.85em; color:#999;
+    font-style:italic; margin-bottom:12px; }
+  .reflect-box .prompt { color:#333; font-weight:500; font-size:0.96em;
+    margin-bottom:4px; margin-top:12px; }
+  .reflect-box textarea { width:100%; min-height:54px; border:none;
+    border-bottom:1.5px dashed #c2ad95; background:transparent;
+    font-family:inherit; font-size:0.95em; padding:6px 4px;
+    resize:vertical; outline:none; color:#333; }
+  .reflect-box textarea:focus { border-bottom-color:#6d4c41;
+    background:rgba(126,102,86,0.04); }
+
+  @media (max-width:600px) {
+    .ttt-board { max-width:100%; gap:6px; }
+    .ttt-cell .word-en { font-size:0.92em; }
+    .ttt-cell .word-cn { font-size:0.7em; }
+    .tracker-grid { font-size:0.75em;
+      grid-template-columns:minmax(90px,1.4fr) repeat(7,1fr); gap:4px; }
+    .tracker-check { width:18px; height:18px; }
+    .mission-head { padding:14px 16px; }
+    .mission-section { padding:12px 16px; }
+    .dialogue-lines .cue { display:none; }
+  }
+
+  /* ===== 🎤 跟讀錄音 ===== */
+  .audio-group { display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(255,243,230,0.7); padding: 4px 8px 4px 4px;
+    border-radius: 46px; border: 1.5px solid rgba(106,76,147,0.2); }
+  .rec-btn, .play-rec-btn {
+    width: 46px; height: 46px; border-radius: 50%;
+    border: 2px solid #b699d8; background: white; cursor: pointer;
+    font-size: 1.15em; display: inline-flex; align-items: center;
+    justify-content: center; transition: all 0.2s; }
+  .rec-btn:hover, .play-rec-btn:hover:not(:disabled) { transform: scale(1.08); }
+  .rec-btn.recording { background: #ffebee; border-color: #e53935; color: #c62828;
+    animation: recPulse 1s infinite; }
+  @keyframes recPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(229,57,53,0.55); }
+    50% { box-shadow: 0 0 0 10px rgba(229,57,53,0); }
+  }
+  .play-rec-btn:disabled { opacity: 0.35; cursor: not-allowed; border-color: #ddd; }
+  .play-rec-btn.has-rec { background: #e8f5e9; border-color: #4caf50; color: #2e7d32; }
+  .play-rec-btn.playing { background: #fff3e0; border-color: #7b5fa8;
+    animation: recPulse 1s infinite; }
+  .rec-hint { flex-basis: 100%; width: 100%; text-align: center;
+    font-size: 0.82em; color: #888; margin-top: 6px; }
+  @media (max-width:620px) {
+    .rec-btn, .play-rec-btn { width: 40px; height: 40px; }
+    .audio-group { padding: 3px 5px 3px 3px; gap: 4px; }
+  }
+
+  /* ===== 💬 家長留言板 ===== */
+  :root {
+    --board-primary: #6a4c93;
+    --board-primary-dark: #3e2270;
+    --board-bg-tint: #f5eff9;
+    --board-chip-bg: #ffe6d3;
+    --board-chip-text: #4a2580;
+    --board-accent: #9d80c4;
+  }
+  .board-wrap { max-width:860px; margin:0 auto; padding:0 8px; }
+  .board-header { text-align:center; margin-bottom:10px; }
+  .board-header h2 { margin:0; color:var(--board-primary-dark); }
+  .board-header h2 span { font-size:0.72em; color:#888; font-style:italic;
+    font-weight:normal; display:block; margin-top:4px; }
+  .board-header p { margin:6px 0 0; color:#666; font-size:0.95em; }
+  .board-status { margin:14px 0; padding:10px 14px; border-radius:12px;
+    font-size:0.9em; line-height:1.55; border:1.5px dashed transparent; }
+  .board-status.online { background:#e7f6ec; color:#1f6d36;
+    border-color:#7ec696; }
+  .board-status.local { background:#fff9db; color:#7c5a00;
+    border-color:#f4d35e; }
+  .board-status.local em { font-style:normal; font-weight:bold; color:#4a2580; }
+  .board-form { background:var(--board-bg-tint); border:2px solid var(--board-primary);
+    border-radius:16px; padding:16px; margin-bottom:16px;
+    box-shadow:0 3px 10px rgba(106,76,147,0.15); }
+  .board-form .form-row { display:flex; gap:10px; margin-bottom:10px;
+    flex-wrap:wrap; }
+  .board-form .nick-input, .board-form .tag-select {
+    flex:1; min-width:140px; padding:9px 12px; border:1.5px solid #d1c2e0;
+    border-radius:10px; font-size:0.95em; background:white; font-family:inherit; }
+  .board-form .tag-select { cursor:pointer; }
+  .board-textarea { width:100%; min-height:80px; padding:10px 12px;
+    border:1.5px solid #d1c2e0; border-radius:10px; font-size:1em;
+    resize:vertical; font-family:inherit; box-sizing:border-box; background:white; }
+  .board-textarea:focus, .board-form .nick-input:focus, .board-form .tag-select:focus {
+    outline:none; border-color:var(--board-primary); }
+  .form-foot { display:flex; justify-content:space-between; align-items:center;
+    margin-top:10px; }
+  .char-count { color:#999; font-size:0.85em; }
+  .board-post-btn { background:var(--board-primary); color:white;
+    border:none; padding:10px 22px; border-radius:22px; font-size:1em;
+    font-weight:bold; cursor:pointer; box-shadow:0 2px 6px rgba(106,76,147,0.35);
+    transition:transform 0.15s, filter 0.15s; }
+  .board-post-btn:hover { filter:brightness(1.08); transform:translateY(-1px); }
+  .board-post-btn:disabled { background:#ccc; cursor:wait; box-shadow:none; }
+  .board-filter { display:flex; flex-wrap:wrap; gap:6px; align-items:center;
+    margin-bottom:14px; }
+  .board-filter > span { font-size:0.9em; color:#666; margin-right:4px; }
+  .filter-chip { padding:6px 12px; border-radius:14px; border:1.5px solid #d1c2e0;
+    background:white; cursor:pointer; font-size:0.85em; color:#555;
+    transition:all 0.15s; font-family:inherit; }
+  .filter-chip:hover { border-color:var(--board-primary); color:var(--board-primary-dark); }
+  .filter-chip.active { background:var(--board-primary); color:white;
+    border-color:var(--board-primary); }
+  .board-list { display:flex; flex-direction:column; gap:12px; }
+  .board-list .empty { padding:40px 20px; text-align:center; color:#999;
+    background:#fafafa; border-radius:12px; border:1.5px dashed #ddd; }
+  .board-card { background:white; border:1.5px solid #d9cae8;
+    border-radius:14px; padding:14px 16px;
+    box-shadow:0 2px 5px rgba(0,0,0,0.04); }
+  .board-card .card-head { display:flex; align-items:center; gap:8px;
+    margin-bottom:8px; flex-wrap:wrap; }
+  .board-card .nick { font-weight:bold; color:var(--board-primary-dark); font-size:0.95em; }
+  .tag-chip { background:var(--board-chip-bg); color:var(--board-chip-text);
+    padding:2px 10px; border-radius:10px; font-size:0.78em; font-weight:bold; }
+  .board-card .time { color:#999; font-size:0.82em; margin-left:auto; }
+  .board-card .card-text { color:#333; line-height:1.6; white-space:pre-wrap;
+    word-break:break-word; margin-bottom:10px; }
+  .card-actions { display:flex; gap:10px; }
+  .card-actions button { background:none; border:1.5px solid #e0e0e0;
+    padding:5px 12px; border-radius:14px; cursor:pointer; font-size:0.85em;
+    color:#666; transition:all 0.15s; font-family:inherit; }
+  .card-actions button:hover { border-color:var(--board-primary); color:var(--board-primary-dark); }
+  .card-actions .heart.liked { background:#ffebee; color:#e53935;
+    border-color:#ffc1c4; }
+  .card-actions .heart.liked:hover { cursor:default; }
+  .replies { margin-top:10px; padding-left:12px; border-left:3px solid #dbc9e8;
+    display:flex; flex-direction:column; gap:8px; }
+  .reply { background:#f7f3fc; border-radius:8px; padding:8px 12px; }
+  .reply-meta { font-size:0.82em; color:#888; margin-bottom:3px; }
+  .reply-meta b { color:var(--board-primary-dark); }
+  .reply-text { color:#444; font-size:0.93em; line-height:1.55;
+    white-space:pre-wrap; word-break:break-word; }
+  .reply-box { margin-top:10px; padding:10px; background:#f7f3fc;
+    border:1.5px dashed #dbc9e8; border-radius:10px; }
+  .reply-box .reply-nick { width:100%; padding:7px 10px; margin-bottom:6px;
+    border:1px solid #d1c2e0; border-radius:8px; font-family:inherit;
+    box-sizing:border-box; font-size:0.9em; background:white; }
+  .reply-box .reply-text-input { width:100%; min-height:60px; padding:8px 10px;
+    border:1px solid #d1c2e0; border-radius:8px; font-family:inherit;
+    box-sizing:border-box; font-size:0.9em; resize:vertical; background:white; }
+  .reply-foot { display:flex; justify-content:flex-end; gap:8px; margin-top:8px; }
+  .reply-cancel, .reply-send { padding:6px 14px; border-radius:12px;
+    border:none; cursor:pointer; font-size:0.85em; font-family:inherit; }
+  .reply-cancel { background:#eee; color:#666; }
+  .reply-send { background:var(--board-primary); color:white; font-weight:bold; }
+  @media (max-width:620px) {
+    .board-form .form-row { flex-direction:column; }
+    .board-card .time { margin-left:0; width:100%; }
+  }
+  /* ===== 頁尾 署名 & 計畫補助說明 ===== */
+  .site-footer {
+    margin-top: 48px;
+    padding: 20px 18px 24px;
+    border-top: 2px solid #d9cae8;
+    background: #f7f3fc;
+    border-radius: 12px;
+    text-align: center;
+    color: #6b4a2e;
+    font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif;
+    line-height: 1.65;
+  }
+  .site-footer .sf-main {
+    font-size: 15px;
+    font-weight: 700;
+    color: #5a3a1e;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+  .site-footer .sf-sub-label {
+    font-size: 12px;
+    color: #8a6a4a;
+    margin: 8px 0 4px;
+  }
+  .site-footer .sf-grants {
+    font-size: 11.5px;
+    color: #7a5a3a;
+    max-width: 820px;
+    margin: 0 auto;
+  }
+  .site-footer .sf-grants p {
+    margin: 2px 0;
+  }
+  @media (max-width:620px) {
+    .site-footer .sf-main { font-size: 13px; }
+    .site-footer .sf-grants { font-size: 10.5px; }
+  }
+</style>
+<!-- Firebase SDK (compat) — only used if you fill in BOARD_FIREBASE_CONFIG below -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+<h1>🌙 Quietly, Nap Time 🌙</h1>
+<p class="subtitle">安靜的午睡時光～ A calming nap adventure for little learners</p>
+
+<div class="mode-switcher">
+  <a class="home-btn" href="../index.html" title="回到繪本總主頁">🏠 總主頁</a>
+  <button class="mode-btn active" data-mode="story">📖 念故事</button>
+  <button class="mode-btn" data-mode="game">🎮 排序遊戲</button>
+  <button class="mode-btn" data-mode="song">🎵 主題曲</button>
+  <button class="mode-btn" data-mode="listen">👂 聽力句子卡</button>
+  <button class="mode-btn" data-mode="teacher">👩‍🏫 老師說</button>
+  <button class="mode-btn" data-mode="dialogue">👨‍👩‍👧 親子對話練習</button>
+  <button class="mode-btn" data-mode="tictactoe">🎯 單字圈圈叉</button>
+  <button class="mode-btn" data-mode="parent">📝 親子任務單</button>
+  <button class="mode-btn" data-mode="board">💬 家長留言板</button>
+</div>
+
+<!-- =============== MODE 1: STORY =============== -->
+<div class="mode-content active" id="mode-story">
+  <div class="story-container">
+    <div class="page-indicator" id="pageIndicator">Page 1 / 8</div>
+    <div class="story-image-wrap">
+      <img class="story-image" id="storyImage" src="" alt="Story page">
+    </div>
+    <div class="page-title" id="pageTitle"></div>
+    <div class="narration" id="narrationBox"></div>
+    <div class="speaker-controls" id="speakerControls"></div>
+    <div class="nav-controls">
+      <button class="nav-btn" id="prevBtn">⬅ 上一頁</button>
+      <button class="nav-btn" id="nextBtn">下一頁 ➡</button>
+    </div>
+  </div>
+</div>
+
+<!-- =============== MODE 2: GAME (Sentence Sort) =============== -->
+<div class="mode-content" id="mode-game">
+  <div class="game-container">
+    <p class="game-instruction">🧩 把單字塊拖到上方的格子，排成完整的英文句子！排對後我會唸給你聽 🎧</p>
+
+    <div class="sentence-tabs" id="sentenceTabs"></div>
+
+    <div class="sentence-zone">
+      <div class="sentence-target" id="sentenceTarget"></div>
+      <div class="sentence-bank-label">👇 從下面拖一塊到上面，或點單字聽發音</div>
+      <div class="sentence-bank" id="sentenceBank"></div>
+    </div>
+
+    <div class="game-controls">
+      <button class="game-btn shuffle" id="shuffleBtn">🔀 重新打亂</button>
+      <button class="game-btn check"   id="checkBtn">✅ 檢查答案</button>
+      <button class="game-btn reset"   id="resetBtn">➡️ 下一句</button>
+    </div>
+    <div class="game-result" id="gameResult"></div>
+  </div>
+</div>
+
+<!-- =============== MODE 3: SONG =============== -->
+<div class="mode-content" id="mode-song">
+  <div class="song-container">
+    <div class="song-header">
+      <div class="song-title">🌙 Soft and Warm, Sleep Song 🌙</div>
+      <p style="color:#777;">一起輕輕地跟著唱～歌詞會隨著音樂亮起來 ✨</p>
+    </div>
+
+    <div class="audio-player">
+      <audio controls id="themeSong" preload="metadata">
+        <source src="audios/Soft And Warm Sleep Song.mp3" type="audio/mpeg">
+        您的瀏覽器不支援音訊播放。
+      </audio>
+      <div class="karaoke-hint">💡 點一下任一句歌詞，可以跳到那一段</div>
+    </div>
+
+    <div class="lyrics" id="lyrics"></div>
+  </div>
+</div>
+
+<!-- =============== MODE 4: LISTENING CARDS =============== -->
+<div class="mode-content" id="mode-listen">
+  <div class="listen-container">
+    <p class="game-instruction">👂 點一張卡片，聽聽看這句話怎麼唸！</p>
+    <div class="listen-grid" id="listenGrid"></div>
+  </div>
+</div>
+
+<!-- =============== MODE: TEACHER PODCAST =============== -->
+<div class="mode-content" id="mode-teacher">
+  <div class="teacher-container">
+    <div class="teacher-avatar">👩‍🏫</div>
+    <div class="teacher-title">老師說</div>
+    <div class="teacher-subtitle">聽聽老師跟爸爸媽媽分享，如何陪孩子一起進入《Quietly, Nap Time》的安靜時光 🌙</div>
+
+    <div class="teacher-audio-box">
+      <audio controls id="teacherPodcast" preload="metadata">
+        <source src="audios/podcast小朋友 噓 小聲 聽 世界是不是變得很安.m4a" type="audio/mp4">
+        您的瀏覽器不支援音訊播放。
+      </audio>
+    </div>
+
+    <div class="teacher-note">
+      💡 <strong>建議的聆聽時機：</strong><br>
+      ・午睡前：播放這段旁白，幫孩子的心情慢慢沉靜下來<br>
+      ・親子共讀後：複習「Shhh / Lie down / Close your eyes」的關鍵字<br>
+      ・搭配「主題曲」的 Soft and Warm Sleep Song，形成固定的午睡儀式
+    </div>
+  </div>
+</div>
+
+<!-- =============== MODE: PARENT-CHILD DIALOGUE =============== -->
+<div class="mode-content" id="mode-dialogue">
+  <div class="dialogue-container">
+    <p class="game-instruction" style="margin-bottom:18px;">
+      👨‍👩‍👧 跟著每一頁的情境，陪孩子玩角色扮演，把英文自然地說出口！
+    </p>
+
+    <div class="dialogue-top">
+      <div class="dialogue-thumb"><img id="dialogueImg" src="" alt="scene"></div>
+      <div class="dialogue-header">
+        <div class="dialogue-scene" id="dialogueScene"></div>
+        <div class="dialogue-title" id="dialogueTitle"></div>
+        <div class="dialogue-role" id="dialogueRole"></div>
+      </div>
+    </div>
+
+    <div class="dialogue-script" id="dialogueScript"></div>
+    <div class="dialogue-tip" id="dialogueTip"></div>
+
+    <div class="nav-controls" style="margin-top:18px;">
+      <button class="nav-btn" id="dlgPrevBtn">⬅ 上一頁</button>
+      <div style="color:#777;font-weight:bold;" id="dialogueIndicator">1 / 8</div>
+      <button class="nav-btn" id="dlgNextBtn">下一頁 ➡</button>
+    </div>
+  </div>
+</div>
+
+<!-- =============== MODE: TIC-TAC-TOE VOCABULARY =============== -->
+<div class="mode-content" id="mode-tictactoe">
+  <div class="ttt-container">
+    <p class="ttt-instruction">
+      🎯 <strong>兩人對戰：單字圈圈叉</strong><br>
+      輪流點格子：先把格子裡的英文單字唸出來，再點下去佔格子！<br>
+      連成三個（橫、直、斜）就贏了 🎉
+    </p>
+    <div class="ttt-players">
+      <div class="ttt-player p1 active" id="ttt-p1">🔴 玩家 1（O）</div>
+      <div class="ttt-player p2"        id="ttt-p2">🟢 玩家 2（X）</div>
+    </div>
+    <div class="ttt-board" id="tttBoard"></div>
+    <div class="ttt-status" id="tttStatus">點一個格子開始！</div>
+    <div class="ttt-controls">
+      <button class="ttt-btn reset"     id="tttResetBtn">🔄 新一局</button>
+      <button class="ttt-btn reshuffle" id="tttShuffleBtn">🔀 換一套單字</button>
+    </div>
+  </div>
+</div>
+
+<!-- =============== MODE: PARENT-CHILD MISSIONS =============== -->
+<div class="mode-content" id="mode-parent">
+  <div class="parent-container">
+
+    <div class="parent-intro">
+      <strong>給爸媽的話 · For parents</strong><br>
+      繪本裡的小貓咪學會安靜下來、躺好、閉上眼睛、抱著被子入睡 — 但這些都是 2–4 歲正在努力學的事。
+      這張任務卡不是要考孩子，是要換爸媽當主角：
+      把故事裡的每一個午睡畫面，變成一個可以和孩子一起做的小儀式。
+      不用做到一百分。孩子翻來覆去、不想睡是正常的 — 這張卡會告訴你怎麼接住他。
+    </div>
+
+    <div id="missionList"></div>
+
+    <div class="dialogue-box">
+      <h3>💬 睡前床邊的英文小對話</h3>
+      <div class="sub">Mini dialogue at bedtime</div>
+      <div class="dialogue-lines">
+        <div class="dialogue-line">
+          <span class="who">爸媽：</span>
+          <span class="line">Are you sleepy?</span>
+          <span class="cue">（揉揉眼睛、打個呵欠）</span>
+        </div>
+        <div class="dialogue-line">
+          <span class="who">孩子：</span>
+          <span class="line">Yes! I'm sleepy.</span>
+          <span class="cue">（他不說，替他說；他會模仿）</span>
+        </div>
+        <div class="dialogue-line">
+          <span class="who">爸媽：</span>
+          <span class="line">Shhh... It's nap time.</span>
+          <span class="cue">（食指放在嘴唇上，輕聲說）</span>
+        </div>
+        <div class="dialogue-line">
+          <span class="who">爸媽：</span>
+          <span class="line">Close your eyes. Good sleep.</span>
+          <span class="cue">（輕輕蓋上被子，摸摸頭）</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="tracker-box">
+      <h3>🌡️ 一週進步溫度計</h3>
+      <div class="sub">Weekly progress — 打勾就好，不用完美</div>
+      <div class="tracker-grid" id="trackerGrid"></div>
+    </div>
+
+    <div class="reflect-box">
+      <h3>📖 爸媽的一週省思</h3>
+      <div class="sub">A parent's weekly notes</div>
+      <div class="prompt">這週孩子做到最讓我驚喜的一件事 ——</div>
+      <textarea placeholder="在這裡寫下..."></textarea>
+      <div class="prompt">我這週比較難忍住介入、比較不耐煩的一次午睡 ——</div>
+      <textarea placeholder="在這裡寫下..."></textarea>
+      <div class="prompt">下週我想為他做一件不同的事 ——</div>
+      <textarea placeholder="在這裡寫下..."></textarea>
+    </div>
+
+  </div>
+</div>
+
+<div class="mode-content" id="mode-board">
+  <div class="board-wrap">
+    <div class="board-header">
+      <h2>💬 家長留言板 <span>Parents Share Board</span></h2>
+      <p>跟其他爸媽分享你們家午睡時間的故事、卡住的地方、或試過有效的方法。</p>
+    </div>
+
+    <div class="board-status" id="boardStatus"></div>
+
+    <div class="board-form">
+      <div class="form-row">
+        <input id="boardNick" class="nick-input" placeholder="暱稱（空白就是匿名家長）" maxlength="20">
+        <select id="boardTag" class="tag-select"></select>
+      </div>
+      <textarea id="boardText" class="board-textarea"
+        placeholder="分享你的心得、問題、或想聽聽其他家長意見…（最多 500 字）"
+        maxlength="500"></textarea>
+      <div class="form-foot">
+        <span class="char-count" id="boardCount">0 / 500</span>
+        <button id="boardPost" class="board-post-btn">送出分享</button>
+      </div>
+    </div>
+
+    <div class="board-filter" id="boardFilter"></div>
+
+    <div id="boardList" class="board-list"></div>
+  </div>
+</div>
+
+<script>
+/* ====== DATA ====== */
+const PAGES = [
+  {
+    img: 'pictures/p01.png',
+    title: 'Page 1 · 想睡的小貓咪',
+    narrationAudio: 'audios/page01小朋友 好吃的午餐吃完了 小貓咪覺得眼皮.m4a',
+    narration: [
+      { zh: '小朋友，看！好吃的午餐吃完了，小貓咪覺得眼皮好重、好重喔……。他抱著心愛的小毯子，忍不住打了一個大大的哈欠——「啊哈～」。我們跟小貓咪一起安靜下來吧：' },
+      { en: 'Quietly, Nap Time.', trans: '安靜地，午睡時間到了。' }
+    ],
+    audios: [{ src: 'audios/01.Quietly Nap Time.m4a', label: '🔊 1' }]
+  },
+  {
+    img: 'pictures/p02.png',
+    title: 'Page 2 · 噓～要安靜',
+    narrationAudio: 'audios/page02.教室變暗了 窗簾也拉起來了 兔子老師走過.mp3',
+    narration: [
+      { zh: '教室變暗了，窗簾也拉起來了。兔子老師走過來，輕輕地把食指放在嘴唇上，說：' },
+      { en: 'Shhh... Be quiet. It\'s time to sleep.', trans: '噓——大家安靜，午睡時間到了。' },
+      { zh: '小朋友們一起比「噓」，把玩具收好，準備休息囉。' }
+    ],
+    audios: [{ src: 'audios/02. Shh Be quiet It s ti.mp3', label: '🔊 1' }]
+  },
+  {
+    img: 'pictures/p03.png',
+    title: 'Page 3 · 我的小床、我的小枕頭',
+    narrationAudio: 'audios/page03小貓咪走到自己的彩色小墊子旁邊 他把軟綿.mp3',
+    narration: [
+      { zh: '小貓咪走到自己的彩色小墊子旁邊。他把軟綿綿的枕頭放好，這是他最喜歡的小窩。他說：' },
+      { en: 'This is my bed. This is my pillow.', trans: '這是我的床，這是我的小枕頭。' }
+    ],
+    audios: [{ src: 'audios/03.This is my bed This .m4a', label: '🔊 1' }]
+  },
+  {
+    img: 'pictures/p04.png',
+    title: 'Page 4 · 軟軟又暖暖的毯子',
+    narrationAudio: 'audios/page04小貓咪鑽進了小被子裡 哇 這條毯子上有好.mp3',
+    narration: [
+      { zh: '小貓咪鑽進了小被子裡。哇，這條毯子上有好多可愛的小魚圖案，摸起來像雲朵一樣軟：' },
+      { en: 'I have a blanket. It is soft and warm.', trans: '我有一條毯子，它好軟、好溫暖喔。' }
+    ],
+    audios: [{ src: 'audios/04. I have a blanket It .m4a', label: '🔊 1' }]
+  },
+  {
+    img: 'pictures/p05.png',
+    title: 'Page 5 · 一、二、三，慢慢躺下',
+    narrationAudio: 'audios/page05準備好了嗎 我們跟著小貓咪一起慢慢地 慢.mp3',
+    narration: [
+      { zh: '準備好了嗎？我們跟著小貓咪一起慢慢地、慢慢地躺下來。' },
+      { en: 'Lie down, little cat. One, two, three.', trans: '躺下來，小貓咪，一、二、三。' },
+      { zh: '一、二、三，把背部靠在墊子上，身體放輕鬆。' }
+    ],
+    audios: [{ src: 'audios/05. Lie down little cat .mp3', label: '🔊 1' }]
+  },
+  {
+    img: 'pictures/p06.png',
+    title: 'Page 6 · 閉上眼睛，晚安小貓咪',
+    narrationAudio: 'audios/page06大家都要進入夢鄉了 老師輕輕地幫小貓咪把.mp3',
+    narration: [
+      { zh: '大家都要進入夢鄉了。老師輕輕地幫小貓咪把毯子拉好，遮住他的小肚肚。老師溫柔地說：' },
+      { en: 'Close your eyes. It\'s nap time. Good sleep, little cat.', trans: '閉上眼睛，午睡時間到了。好好睡，小貓咪。' }
+    ],
+    audios: [{ src: 'audios/06. Shhh It is nap time .mp3', label: '🔊 1' }]
+  },
+  {
+    img: 'pictures/p07.png',
+    title: 'Page 7 · 做個甜甜的夢',
+    narrationAudio: 'audios/page07 教室裡大家都睡得好香喔 有的小動物把腿踢.mp3',
+    narration: [
+      { zh: '看！教室裡大家都睡得好香喔。有的小動物把腿踢到了被子外面，有的側著身體抱著玩偶。整個世界都安靜了下來：' },
+      { en: 'Dream a little dream. Sleep tight.', trans: '做個甜甜的夢，好好睡喔。' }
+    ],
+    audios: [{ src: 'audios/07.Shhh Nap time for ev.mp3', label: '🔊 1' }]
+  },
+  {
+    img: 'pictures/p08.png',
+    title: 'Page 8 · 叮鈴鈴～起床囉！',
+    narrationAudio: 'audios/page08 鈴 叮鈴鈴 太陽公公升得更高了 午睡時間.mp3',
+    narration: [
+      { zh: '鈴——！叮鈴鈴！太陽公公升得更高了，午睡時間結束囉！小貓咪睜開眼睛，舉起手，伸了一個大大的懶腰：' },
+      { en: 'Wake up! I feel great.', trans: '起床囉！我精神真好。' },
+      { zh: '所有的小朋友也都醒過來了，大家又是充滿能量的小英雄！' }
+    ],
+    audios: [{ src: 'audios/08. Wake up I feel great.m4a', label: '🔊 1' }]
+  }
+];
+
+/* Karaoke lyrics with estimated timestamps for Soft and Warm Sleep Song */
+const LYRICS = [
+  { verse: 'Verse 1 · 準備休息', action: '🤫 手指比「噓」，輕輕拍拍自己的小床', lines: [
+      { t:  3.0, text: 'Shhh, shhh, be quiet,' },
+      { t:  7.5, text: 'It is time to sleep.' },
+      { t: 12.0, text: 'Soft bed, soft bed,' },
+      { t: 16.5, text: 'One, two, three.' }
+  ]},
+  { verse: 'Chorus · 核心物品與感受', action: '🛏️ 雙手托腮做睡覺狀，環抱自己感覺溫暖', lines: [
+      { t: 22.0, text: 'This is my pillow,' },
+      { t: 26.5, text: 'This is my blanket.' },
+      { t: 31.0, text: 'Soft and warm,' },
+      { t: 35.5, text: 'Soft and warm.' }
+  ]},
+  { verse: 'Verse 2 · 進入夢鄉', action: '😴 慢慢閉上眼睛，做出躺下的手勢', lines: [
+      { t: 41.0, text: 'Close your eyes, little cat,' },
+      { t: 45.5, text: 'Lie down, one, two, three.' },
+      { t: 50.5, text: 'Sleep tight, sleep tight,' },
+      { t: 55.5, text: 'Dream a little dream.' }
+  ]},
+  { verse: 'Bridge · 安靜的氛圍', action: '🌙 聲音越來越小，進入完全安靜的狀態', lines: [
+      { t: 60.0, text: 'Quietly, quietly,' },
+      { t: 63.5, text: 'Everyone is sleeping.' },
+      { t: 67.0, text: 'Shhh... Shhh...' },
+      { t: 71.0, text: 'Sweet dreams.' }
+  ]},
+  { verse: 'Outro · 醒來充滿活力', action: '☀️ 雙手舉高伸個大懶腰，最後小聲歡呼', lines: [
+      { t: 78.0, text: 'Wake up, wake up!' },
+      { t: 82.5, text: 'Open your eyes.' },
+      { t: 87.5, text: 'I feel great, I feel great!' },
+      { t: 93.0, text: 'Yay!' }
+  ]}
+];
+
+/* Listening cards — flatten pages into one card per audio */
+const LISTEN_CARDS = [];
+PAGES.forEach((p, pi) => {
+  p.audios.forEach((a, ai) => {
+    const label = p.audios.length > 1
+      ? `Page ${pi + 1}-${ai + 1}`
+      : `Page ${pi + 1}`;
+    LISTEN_CARDS.push({ label, img: p.img, src: a.src });
+  });
+});
+
+/* ====== MODE SWITCHER ====== */
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.mode-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('mode-' + btn.dataset.mode).classList.add('active');
+    stopAllAudio();
+  });
+});
+
+function stopAllAudio() {
+  if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; currentAudio = null; }
+  document.querySelectorAll('.speaker-btn, .play-rec-btn').forEach(b => b.classList.remove('playing'));
+  document.querySelectorAll('.listen-card').forEach(c => c.classList.remove('playing', 'pop-in'));
+  const themeSong = document.getElementById('themeSong');
+  if (themeSong) themeSong.pause();
+  const teacherPod = document.getElementById('teacherPodcast');
+  if (teacherPod) teacherPod.pause();
+}
+
+/* ====== MODE 1: STORY ====== */
+let currentPage = 0;
+let currentAudio = null;
+
+/* ====== 🎤 跟讀錄音狀態 ====== */
+const recordings = {};       // key → {blob, url}
+let activeRecorder = null;
+let activeRecKey = null;
+let activeRecChunks = [];
+let micStream = null;
+
+async function getMicStream() {
+  if (micStream) return micStream;
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    throw new Error('瀏覽器不支援錄音功能');
+  }
+  micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  return micStream;
+}
+
+async function toggleRecord(key, recBtn, playRecBtn) {
+  // 同一個 key 再按一次 → 停止
+  if (activeRecorder && activeRecKey === key) {
+    activeRecorder.stop();
+    return;
+  }
+  // 若另一個錄音進行中 → 先停
+  if (activeRecorder) {
+    activeRecorder.stop();
+    await new Promise(r => setTimeout(r, 150));
+  }
+  stopAllAudio();
+  try {
+    const stream = await getMicStream();
+    activeRecChunks = [];
+    activeRecorder = new MediaRecorder(stream);
+    activeRecKey = key;
+    activeRecorder.ondataavailable = e => { if (e.data.size > 0) activeRecChunks.push(e.data); };
+    activeRecorder.onstop = () => {
+      const mime = activeRecorder ? (activeRecorder.mimeType || 'audio/webm') : 'audio/webm';
+      const blob = new Blob(activeRecChunks, { type: mime });
+      const url = URL.createObjectURL(blob);
+      if (recordings[key] && recordings[key].url) URL.revokeObjectURL(recordings[key].url);
+      recordings[key] = { blob, url };
+      if (recBtn) {
+        recBtn.classList.remove('recording');
+        recBtn.innerHTML = '🎤';
+        recBtn.title = '重錄';
+      }
+      if (playRecBtn) {
+        playRecBtn.disabled = false;
+        playRecBtn.classList.add('has-rec');
+      }
+      activeRecorder = null;
+      activeRecKey = null;
+    };
+    activeRecorder.start();
+    recBtn.classList.add('recording');
+    recBtn.innerHTML = '⏹';
+    recBtn.title = '點擊結束錄音';
+  } catch (err) {
+    alert('無法使用麥克風：' + (err.message || err) + '\n請確認瀏覽器已授權麥克風權限（右上角鎖頭）再試。');
+    activeRecorder = null;
+    activeRecKey = null;
+    recBtn.classList.remove('recording');
+    recBtn.innerHTML = '🎤';
+  }
+}
+
+function playRecording(key, playRecBtn) {
+  const r = recordings[key];
+  if (!r) return;
+  stopAllAudio();
+  const a = new Audio(r.url);
+  currentAudio = a;
+  playRecBtn.classList.add('playing');
+  a.addEventListener('ended', () => {
+    playRecBtn.classList.remove('playing');
+    currentAudio = null;
+  });
+  a.play().catch(err => {
+    playRecBtn.classList.remove('playing');
+    console.error('Recording playback failed', err);
+  });
+}
+
+function renderPage() {
+  const page = PAGES[currentPage];
+  document.getElementById('pageIndicator').textContent = `Page ${currentPage + 1} / ${PAGES.length}`;
+  document.getElementById('storyImage').src = page.img;
+  document.getElementById('pageTitle').textContent = page.title || '';
+
+  const narrBox = document.getElementById('narrationBox');
+  narrBox.innerHTML = '';
+  (page.narration || []).forEach(seg => {
+    if (seg.zh) {
+      const span = document.createElement('span');
+      span.textContent = seg.zh;
+      narrBox.appendChild(span);
+    }
+    if (seg.en) {
+      narrBox.appendChild(document.createTextNode('「'));
+      const en = document.createElement('span');
+      en.className = 'en';
+      en.textContent = seg.en;
+      narrBox.appendChild(en);
+      narrBox.appendChild(document.createTextNode('」'));
+      if (seg.trans) {
+        const tr = document.createElement('span');
+        tr.className = 'zh-trans';
+        tr.textContent = '（' + seg.trans + '）';
+        narrBox.appendChild(tr);
+      }
+    }
+  });
+
+  const controls = document.getElementById('speakerControls');
+  controls.innerHTML = '';
+
+  if (page.narrationAudio) {
+    const narrateBtn = document.createElement('button');
+    narrateBtn.className = 'speaker-btn primary-narrate';
+    narrateBtn.innerHTML = '🎤 <span>念旁白</span>';
+    narrateBtn.title = '播放旁白';
+    narrateBtn.addEventListener('click', () => playAudio(page.narrationAudio, narrateBtn));
+    controls.appendChild(narrateBtn);
+  }
+
+  if (page.audios && page.audios.length > 0) {
+    const label = document.createElement('span');
+    label.className = 'english-audio-label';
+    label.textContent = '英文對白：';
+    controls.appendChild(label);
+
+    page.audios.forEach((a, i) => {
+      const wrap = document.createElement('span');
+      wrap.className = 'audio-group';
+
+      const btn = document.createElement('button');
+      btn.className = 'speaker-btn' + (i > 0 ? ' secondary' : '');
+      btn.innerHTML = a.label;
+      btn.title = '播放英文對白';
+      btn.addEventListener('click', () => playAudio(a.src, btn));
+      wrap.appendChild(btn);
+
+      const key = `p${currentPage}_a${i}`;
+
+      const recBtn = document.createElement('button');
+      recBtn.className = 'rec-btn';
+      recBtn.innerHTML = '🎤';
+      recBtn.title = recordings[key] ? '重錄' : '跟讀錄音';
+
+      const playRecBtn = document.createElement('button');
+      playRecBtn.className = 'play-rec-btn' + (recordings[key] ? ' has-rec' : '');
+      playRecBtn.innerHTML = '▶️';
+      playRecBtn.title = '播放你的錄音';
+      playRecBtn.disabled = !recordings[key];
+
+      recBtn.addEventListener('click', () => toggleRecord(key, recBtn, playRecBtn));
+      playRecBtn.addEventListener('click', () => playRecording(key, playRecBtn));
+
+      wrap.appendChild(recBtn);
+      wrap.appendChild(playRecBtn);
+      controls.appendChild(wrap);
+    });
+
+    const hint = document.createElement('div');
+    hint.className = 'rec-hint';
+    hint.textContent = '🎤 跟著念 → 按一下錄音、再按一下停止；▶️ 播放你的錄音';
+    controls.appendChild(hint);
+  }
+
+  document.getElementById('prevBtn').disabled = currentPage === 0;
+  document.getElementById('nextBtn').disabled = currentPage === PAGES.length - 1;
+}
+
+function playAudio(src, btn) {
+  stopAllAudio();
+  const audio = new Audio(src);
+  currentAudio = audio;
+  btn.classList.add('playing');
+
+  audio.play().catch(err => {
+    btn.classList.remove('playing');
+    console.error('Audio play failed:', err);
+    alert('音檔無法播放：' + src);
+  });
+
+  audio.addEventListener('ended', () => {
+    btn.classList.remove('playing');
+    currentAudio = null;
+  });
+}
+
+document.getElementById('prevBtn').addEventListener('click', () => {
+  if (currentPage > 0) { stopAllAudio(); currentPage--; renderPage(); }
+});
+document.getElementById('nextBtn').addEventListener('click', () => {
+  if (currentPage < PAGES.length - 1) { stopAllAudio(); currentPage++; renderPage(); }
+});
+
+renderPage();
+
+/* ====== MODE 2: SENTENCE SORT ====== */
+const SENTENCES = [
+  {
+    "id": "s1",
+    "text": "Be quiet.",
+    "tiles": [
+      "Be",
+      "quiet."
+    ]
+  },
+  {
+    "id": "s2",
+    "text": "It's nap time.",
+    "tiles": [
+      "It's",
+      "nap",
+      "time."
+    ]
+  },
+  {
+    "id": "s3",
+    "text": "Close your eyes.",
+    "tiles": [
+      "Close",
+      "your",
+      "eyes."
+    ]
+  },
+  {
+    "id": "s4",
+    "text": "Sleep tight.",
+    "tiles": [
+      "Sleep",
+      "tight."
+    ]
+  },
+  {
+    "id": "s5",
+    "text": "I feel great!",
+    "tiles": [
+      "I",
+      "feel",
+      "great!"
+    ]
+  }
+];
+
+let sIdx = 0;             // current sentence index
+let bankTiles = [];       // [{word, oIdx}] in bank
+let slotTiles = [];       // [{word, oIdx} | null] in slots
+
+/* ---- Audio: single voice for words AND sentences ----
+   Primary: pre-generated edge-tts Microsoft Ana MP3s under audios/sentences/.
+   Fallback: SpeechSynthesis with a locked voice (chosen once, kept stable). */
+let _cachedVoices = [];
+let _lockedVoice = null;
+function _loadVoices() {
+  if (!('speechSynthesis' in window)) return;
+  _cachedVoices = speechSynthesis.getVoices() || [];
+  _lockedVoice = null; // reselect with new list
+  _pickVoice();
+}
+function _pickVoice() {
+  if (_lockedVoice) return _lockedVoice;
+  const voices = _cachedVoices;
+  if (!voices.length) return null;
+  // Order matches what the user will hear after running the audio gen script.
+  const order = [
+    /^Microsoft Ana/i,
+    /\bAna\b/i,
+    /Samantha/i,
+    /Karen/i,
+    /Allison/i,
+    /Tessa/i,
+    /Nicky/i,
+    /Aria/i,
+    /Jenny/i,
+    /^Google.*US English/i,
+    /female/i,
+  ];
+  for (const re of order) {
+    const v = voices.find(v => re.test(v.name) && /en-/i.test(v.lang));
+    if (v) { _lockedVoice = v; return v; }
+  }
+  _lockedVoice = voices.find(v => /en-/i.test(v.lang)) || null;
+  return _lockedVoice;
+}
+_loadVoices();
+if ('speechSynthesis' in window) {
+  speechSynthesis.onvoiceschanged = _loadVoices;
+}
+
+function fallbackSpeak(text) {
+  if (!('speechSynthesis' in window) || !text) return;
+  try { window.speechSynthesis.cancel(); } catch (e) {}
+  setTimeout(() => {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'en-US';
+    u.rate = 0.95;
+    u.pitch = 1.9;
+    const v = _pickVoice();
+    if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  }, 80);
+}
+
+function _playMp3(src, fallbackText) {
+  const a = new Audio(src);
+  let settled = false;
+  const fall = () => {
+    if (settled) return;
+    settled = true;
+    fallbackSpeak(fallbackText);
+  };
+  a.addEventListener('error', fall);
+  a.addEventListener('playing', () => { settled = true; });
+  a.play().catch(fall);
+}
+
+function speakSentence(s) {
+  _playMp3('audios/sentences/' + s.id + '.mp3', s.text);
+}
+
+function speakTile(s, oIdx, word) {
+  // Strip trailing punctuation for fallback voice
+  const spoken = word.replace(/[.,!?]+$/, '');
+  _playMp3('audios/sentences/' + s.id + '_' + oIdx + '.mp3', spoken);
+}
+
+/* ---- Game logic ---- */
+function shuffleArr(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  // make sure shuffled order isn't already correct (for >=2 tiles)
+  if (a.length >= 2 && a.every((v, i) => v.oIdx === i)) {
+    [a[0], a[1]] = [a[1], a[0]];
+  }
+  return a;
+}
+
+function loadSentence(idx) {
+  sIdx = (idx + SENTENCES.length) % SENTENCES.length;
+  const s = SENTENCES[sIdx];
+  slotTiles = s.tiles.map(_ => null);
+  bankTiles = shuffleArr(s.tiles.map((w, i) => ({ word: w, oIdx: i })));
+  const r = document.getElementById('gameResult');
+  r.textContent = '';
+  r.className = 'game-result';
+  renderAll();
+}
+
+function renderAll() { renderTabs(); renderTarget(); renderBank(); }
+
+function renderTabs() {
+  const tabs = document.getElementById('sentenceTabs');
+  tabs.innerHTML = '';
+  SENTENCES.forEach((s, i) => {
+    const b = document.createElement('button');
+    b.className = 'sentence-tab' + (i === sIdx ? ' active' : '');
+    b.textContent = '\u7b2c ' + (i+1) + ' \u53e5';
+    b.addEventListener('click', () => loadSentence(i));
+    tabs.appendChild(b);
+  });
+}
+
+function mkTile(tile, inSlot) {
+  const t = document.createElement('div');
+  t.className = 'sentence-tile' + (inSlot ? ' in-slot' : '');
+  t.draggable = true;
+  t.textContent = tile.word;
+  t.dataset.oIdx = tile.oIdx;
+  t.addEventListener('dragstart', e => {
+    e.dataTransfer.setData('text/plain', String(tile.oIdx));
+    e.dataTransfer.effectAllowed = 'move';
+    t.classList.add('dragging');
+  });
+  t.addEventListener('dragend', () => t.classList.remove('dragging'));
+
+  // Touch support (mobile drag-drop) + tap-to-pronounce
+  let touchClone = null, touchMoved = false, touchStart = null;
+  t.addEventListener('touchstart', e => {
+    if (e.touches.length !== 1) return;
+    e.preventDefault();
+    touchMoved = false;
+    touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    touchClone = t.cloneNode(true);
+    touchClone.style.position = 'fixed';
+    touchClone.style.pointerEvents = 'none';
+    touchClone.style.opacity = '0.85';
+    touchClone.style.zIndex = '9999';
+    moveTouchClone(e.touches[0]);
+    document.body.appendChild(touchClone);
+    t.classList.add('dragging');
+  }, { passive: false });
+  t.addEventListener('touchmove', e => {
+    if (!touchClone) return;
+    e.preventDefault();
+    const dx = e.touches[0].clientX - touchStart.x;
+    const dy = e.touches[0].clientY - touchStart.y;
+    if (Math.hypot(dx, dy) > 8) touchMoved = true;
+    moveTouchClone(e.touches[0]);
+    document.querySelectorAll('.sentence-slot.over, .sentence-bank.over')
+      .forEach(el => el.classList.remove('over'));
+    const tx = e.touches[0].clientX, ty = e.touches[0].clientY;
+    const elem = document.elementFromPoint(tx, ty);
+    const slot = elem && elem.closest('.sentence-slot');
+    const bank = elem && elem.closest('#sentenceBank');
+    if (slot) slot.classList.add('over');
+    else if (bank) bank.classList.add('over');
+  }, { passive: false });
+  t.addEventListener('touchend', e => {
+    if (!touchClone) return;
+    const tc = e.changedTouches[0];
+    const elem = document.elementFromPoint(tc.clientX, tc.clientY);
+    const slot = elem && elem.closest('.sentence-slot');
+    const bank = elem && elem.closest('#sentenceBank');
+    document.body.removeChild(touchClone);
+    touchClone = null;
+    t.classList.remove('dragging');
+    document.querySelectorAll('.sentence-slot.over, .sentence-bank.over')
+      .forEach(el => el.classList.remove('over'));
+    if (touchMoved) {
+      if (slot) handleDrop(tile.oIdx, parseInt(slot.dataset.slotIdx));
+      else if (bank) handleDropToBank(tile.oIdx);
+    } else {
+      // Tap (no drag) → pronounce this tile
+      speakTile(SENTENCES[sIdx], tile.oIdx, tile.word);
+    }
+  });
+  function moveTouchClone(touch) {
+    const r = t.getBoundingClientRect();
+    touchClone.style.left = (touch.clientX - r.width/2) + 'px';
+    touchClone.style.top  = (touch.clientY - r.height/2) + 'px';
+  }
+
+  // Click-to-pronounce on desktop
+  t.addEventListener('click', () => {
+    speakTile(SENTENCES[sIdx], tile.oIdx, tile.word);
+  });
+  return t;
+}
+
+function renderTarget() {
+  const target = document.getElementById('sentenceTarget');
+  target.innerHTML = '';
+  slotTiles.forEach((tile, i) => {
+    const slot = document.createElement('div');
+    slot.className = 'sentence-slot';
+    slot.dataset.slotIdx = i;
+    if (tile) slot.appendChild(mkTile(tile, true));
+    addDropHandlers(slot, true);
+    target.appendChild(slot);
+  });
+}
+
+function renderBank() {
+  const bank = document.getElementById('sentenceBank');
+  bank.innerHTML = '';
+  bankTiles.forEach(tile => bank.appendChild(mkTile(tile, false)));
+  addDropHandlers(bank, false);
+}
+
+function addDropHandlers(el, isSlot) {
+  el.addEventListener('dragover', e => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    el.classList.add('over');
+  });
+  el.addEventListener('dragleave', () => el.classList.remove('over'));
+  el.addEventListener('drop', e => {
+    e.preventDefault();
+    el.classList.remove('over');
+    const raw = e.dataTransfer.getData('text/plain');
+    if (raw === '') return;
+    const oIdx = parseInt(raw, 10);
+    if (Number.isNaN(oIdx)) return;
+    if (isSlot) handleDrop(oIdx, parseInt(el.dataset.slotIdx));
+    else handleDropToBank(oIdx);
+  });
+}
+
+function _findTile(oIdx) {
+  const fromBank = bankTiles.find(t => t.oIdx === oIdx);
+  if (fromBank) return fromBank;
+  for (const s of slotTiles) if (s && s.oIdx === oIdx) return s;
+  return null;
+}
+function _removeTile(oIdx) {
+  const bi = bankTiles.findIndex(t => t.oIdx === oIdx);
+  if (bi >= 0) { bankTiles.splice(bi, 1); return; }
+  const si = slotTiles.findIndex(t => t && t.oIdx === oIdx);
+  if (si >= 0) slotTiles[si] = null;
+}
+
+function handleDrop(oIdx, slotIdx) {
+  const tile = _findTile(oIdx);
+  if (!tile) return;
+  _removeTile(oIdx);
+  if (slotTiles[slotIdx]) bankTiles.push(slotTiles[slotIdx]);
+  slotTiles[slotIdx] = tile;
+  renderAll();
+}
+
+function handleDropToBank(oIdx) {
+  const tile = _findTile(oIdx);
+  if (!tile) return;
+  _removeTile(oIdx);
+  if (!bankTiles.some(t => t.oIdx === oIdx)) bankTiles.push(tile);
+  renderAll();
+}
+
+document.getElementById('shuffleBtn').addEventListener('click', () => loadSentence(sIdx));
+document.getElementById('resetBtn').addEventListener('click', () => loadSentence(sIdx + 1));
+document.getElementById('checkBtn').addEventListener('click', () => {
+  const s = SENTENCES[sIdx];
+  const allFilled = slotTiles.every(t => t);
+  const slots = document.querySelectorAll('#sentenceTarget .sentence-slot');
+  slots.forEach((slot, i) => {
+    slot.classList.remove('correct', 'incorrect');
+    if (slotTiles[i] && slotTiles[i].oIdx === i) slot.classList.add('correct');
+    else slot.classList.add('incorrect');
+  });
+  const r = document.getElementById('gameResult');
+  if (!allFilled) {
+    r.textContent = '\ud83e\udd14 \u9084\u6c92\u6392\u5b8c\u5594\uff0c\u628a\u55ae\u5b57\u90fd\u62d6\u4e0a\u53bb\u5427\uff01';
+    r.className = 'game-result result-fail';
+    return;
+  }
+  const correct = slotTiles.every((t, i) => t && t.oIdx === i);
+  if (correct) {
+    r.textContent = '\ud83c\udf89 \u592a\u68d2\u4e86\uff01\u300c' + s.text + '\u300d';
+    r.className = 'game-result result-success';
+    speakSentence(s);
+  } else {
+    r.textContent = '\ud83d\udcaa \u9806\u5e8f\u9084\u4e0d\u592a\u5c0d\uff0c\u518d\u8a66\u4e00\u6b21\uff01';
+    r.className = 'game-result result-fail';
+  }
+});
+
+loadSentence(0);
+
+/* ====== MODE 3: KARAOKE LYRICS ====== */
+const lyricsEl = document.getElementById('lyrics');
+const themeSong = document.getElementById('themeSong');
+
+const flatLines = [];
+LYRICS.forEach((verse, vIdx) => {
+  verse.lines.forEach((line, lIdx) => {
+    flatLines.push({ ...line, vIdx, lIdx });
+  });
+});
+
+function renderLyrics() {
+  lyricsEl.innerHTML = '';
+  LYRICS.forEach((v, vIdx) => {
+    const verseDiv = document.createElement('div');
+    verseDiv.className = 'verse';
+    verseDiv.dataset.vIdx = vIdx;
+
+    const title = document.createElement('div');
+    title.className = 'verse-title';
+    title.textContent = '🎵 ' + v.verse;
+    verseDiv.appendChild(title);
+
+    v.lines.forEach((line, lIdx) => {
+      const lineDiv = document.createElement('div');
+      lineDiv.className = 'verse-line';
+      lineDiv.textContent = line.text;
+      lineDiv.dataset.vIdx = vIdx;
+      lineDiv.dataset.lIdx = lIdx;
+      lineDiv.dataset.t = line.t;
+      lineDiv.addEventListener('click', () => {
+        themeSong.currentTime = line.t;
+        themeSong.play();
+      });
+      verseDiv.appendChild(lineDiv);
+    });
+
+    if (v.action) {
+      const act = document.createElement('div');
+      act.className = 'verse-action';
+      act.textContent = v.action;
+      verseDiv.appendChild(act);
+    }
+
+    lyricsEl.appendChild(verseDiv);
+  });
+}
+
+renderLyrics();
+
+// Lyrics are displayed statically — no auto-highlight / auto-scroll while the song plays.
+// (Clicking a line still seeks the audio to that timestamp; see renderLyrics.)/* ====== MODE 4: LISTENING CARDS ====== */
+const listenGrid = document.getElementById('listenGrid');
+
+function renderListenCards() {
+  listenGrid.innerHTML = '';
+  LISTEN_CARDS.forEach((card, idx) => {
+    const el = document.createElement('div');
+    el.className = 'listen-card';
+    el.dataset.idx = idx;
+    el.innerHTML = `
+      <img src="${card.img}" alt="${card.label}">
+      <div class="listen-card-label">${card.label}</div>
+      <div class="listen-card-speaker">🔊</div>
+    `;
+    el.addEventListener('click', () => playListenCard(el, card));
+    listenGrid.appendChild(el);
+  });
+}
+
+function playListenCard(el, card) {
+  stopAllAudio();
+  document.querySelectorAll('.listen-card').forEach(c => c.classList.remove('playing', 'pop-in'));
+  el.classList.add('playing', 'pop-in');
+
+  const audio = new Audio(card.src);
+  currentAudio = audio;
+
+  audio.play().catch(err => {
+    el.classList.remove('playing', 'pop-in');
+    console.error('Audio play failed:', err);
+    alert('音檔無法播放：' + card.src);
+  });
+
+  audio.addEventListener('ended', () => {
+    el.classList.remove('playing', 'pop-in');
+    currentAudio = null;
+  });
+}
+
+renderListenCards();
+
+/* ====== MODE: PARENT-CHILD DIALOGUE ====== */
+const DIALOGUES = [
+  {
+    img: 'pictures/p01.png',
+    title: 'Page 1 · Quietly, Nap Time',
+    scene: '情境一：眼皮開始重重的',
+    role: '👉 爸爸／媽媽扮演「一起想睡的夥伴」，帶孩子感受吃飽後身體的訊號，啟動午睡儀式。',
+    script: [
+      { speaker: 'parent', zh: '（輕輕揉眼睛）哇～吃飽飽之後，我的眼皮也好重喔～' },
+      { speaker: 'parent', zh: '現在是什麼時間呀？', en: "It's nap time." },
+      { speaker: 'child',  zh: '（揉揉眼睛跟著說）', en: "Nap time." },
+      { speaker: 'parent', zh: '（牽起孩子的手，輕聲說）', en: 'Quietly, nap time.' }
+    ],
+    tip: '<strong>小建議：</strong>把「吃飽 → 揉眼睛 → 說 Nap time」變成每天午睡前的固定訊號，讓孩子身體提早進入休息狀態。'
+  },
+  {
+    img: 'pictures/p02.png',
+    title: 'Page 2 · Shhh... Be quiet.',
+    scene: '情境二：練習小小聲',
+    role: '👉 爸爸／媽媽扮演「悄悄話守護者」，用遊戲的方式帶孩子練習輕聲細語。',
+    script: [
+      { speaker: 'parent', zh: '（把食指放在嘴唇上，眼睛睜大）', en: 'Shhh...' },
+      { speaker: 'child',  zh: '（模仿動作）', en: 'Shhh...' },
+      { speaker: 'parent', zh: '我們現在要小聲一點喔～', en: 'Be quiet.' },
+      { speaker: 'parent', zh: '為什麼要小聲呢？', en: "It's time to sleep." },
+      { speaker: 'child',  zh: '（小小聲跟著說）', en: "Time to sleep." }
+    ],
+    tip: '<strong>小建議：</strong>先跟孩子玩「誰可以更小聲」的遊戲，讓他覺得「小聲」是好玩的事，而不是被限制。'
+  },
+  {
+    img: 'pictures/p03.png',
+    title: 'Page 3 · This is my bed. This is my pillow.',
+    scene: '情境三：認識我的專屬午睡角落',
+    role: '👉 爸爸／媽媽陪孩子一一介紹他的午睡裝備，建立「這是我的地方」的安全感。',
+    script: [
+      { speaker: 'parent', zh: '（拍拍床墊）看看這是誰的小窩呀？', en: 'This is my bed.' },
+      { speaker: 'child',  zh: '（爬上床拍拍床）', en: 'This is my bed!' },
+      { speaker: 'parent', zh: '（拿起枕頭）那這個軟軟的是什麼？', en: 'This is my pillow.' },
+      { speaker: 'child',  zh: '（抱抱枕頭）', en: 'My pillow.' },
+      { speaker: 'parent', zh: '哇～你有自己的床，也有自己的枕頭，好幸福喔！' }
+    ],
+    tip: '<strong>小建議：</strong>可以讓孩子親手擺好枕頭、床單，他越參與布置，就越願意留在床上睡覺。'
+  },
+  {
+    img: 'pictures/p04.png',
+    title: 'Page 4 · I have a blanket. Soft and warm.',
+    scene: '情境四：擁抱溫暖的小被子',
+    role: '👉 爸爸／媽媽扮演「蓋被子小精靈」，用觸覺詞彙帶孩子感受被子的舒服。',
+    script: [
+      { speaker: 'parent', zh: '（抖開被子蓋到孩子身上）我把被子蓋好囉～', en: 'I have a blanket.' },
+      { speaker: 'child',  zh: '（摸摸被子）', en: 'My blanket.' },
+      { speaker: 'parent', zh: '（摸摸被子）這個被子摸起來是什麼感覺？', en: 'Soft.' },
+      { speaker: 'parent', zh: '（把被子拉到孩子下巴）那現在身體呢？', en: 'Warm.' },
+      { speaker: 'child',  zh: '（瞇起眼睛微笑）', en: 'Soft and warm.' }
+    ],
+    tip: '<strong>小建議：</strong>教孩子用 soft / warm / cozy 形容身體感受，這些是他日後描述情緒與感覺的第一批英文形容詞。'
+  },
+  {
+    img: 'pictures/p05.png',
+    title: 'Page 5 · Lie down. One, two, three.',
+    scene: '情境五：一起數到三躺下來',
+    role: '👉 爸爸／媽媽扮演「躺下倒數員」，用數數讓孩子願意乖乖躺好。',
+    script: [
+      { speaker: 'parent', zh: '（輕拍床墊）小貓咪，準備好了嗎？', en: 'Lie down, little cat.' },
+      { speaker: 'child',  zh: '（趴在床上）喵～' },
+      { speaker: 'parent', zh: '我們一起數到三就躺下喔～', en: 'One...' },
+      { speaker: 'child',  zh: '（跟著數）', en: 'Two...' },
+      { speaker: 'parent', zh: '（一起躺下來）', en: 'Three!' },
+      { speaker: 'child',  zh: '（笑著躺平）', en: 'Lie down!' }
+    ],
+    tip: '<strong>小建議：</strong>把「One, two, three → 躺下」變成每天的信號，孩子會知道「數到三」就是該閉眼休息的時候了。'
+  },
+  {
+    img: 'pictures/p06.png',
+    title: 'Page 6 · Close your eyes. Good sleep.',
+    scene: '情境六：閉上眼睛進入夢鄉',
+    role: '👉 爸爸／媽媽扮演「輕聲祝福的人」，陪孩子完成閉眼儀式。',
+    script: [
+      { speaker: 'parent', zh: '（用手輕輕蓋住孩子的眼睛）', en: 'Close your eyes.' },
+      { speaker: 'child',  zh: '（緊緊閉上眼睛）', en: 'Close my eyes.' },
+      { speaker: 'parent', zh: '（小小聲地說）現在是午睡時間囉～', en: "It's nap time." },
+      { speaker: 'parent', zh: '（輕拍胸口）好好休息喔，我的小貓咪～', en: 'Good sleep, little cat.' },
+      { speaker: 'child',  zh: '（打個呵欠）', en: 'Good sleep.' }
+    ],
+    tip: '<strong>小建議：</strong>閉眼時可以用手輕輕罩著孩子的眼睛 3 秒再拿開，他會更容易放鬆進入睡眠狀態。'
+  },
+  {
+    img: 'pictures/p07.png',
+    title: 'Page 7 · Dream a little dream.',
+    scene: '情境七：帶著美夢入睡',
+    role: '👉 爸爸／媽媽扮演「夢境導覽員」，用溫柔的話語引導孩子進入美夢。',
+    script: [
+      { speaker: 'parent', zh: '（摸摸孩子的頭）我們來做一個好夢好不好？', en: 'Dream a little dream.' },
+      { speaker: 'child',  zh: '（小小聲）', en: 'A little dream...' },
+      { speaker: 'parent', zh: '你想夢到什麼呢？氣球？冰淇淋？還是大大的海？' },
+      { speaker: 'child',  zh: '（小聲說出自己的願望）' },
+      { speaker: 'parent', zh: '（輕輕拍拍孩子）那就把願望放在枕頭下～', en: 'Sleep tight.' }
+    ],
+    tip: '<strong>小建議：</strong>每天問孩子「你想夢到什麼？」不只是睡前儀式，也是觀察孩子情緒與想像力的美好時刻。'
+  },
+  {
+    img: 'pictures/p08.png',
+    title: 'Page 8 · Wake up! I feel great.',
+    scene: '情境八：起床的美好',
+    role: '👉 爸爸／媽媽扮演「溫柔的晨光」，用擁抱和讚美迎接孩子醒來。',
+    script: [
+      { speaker: 'parent', zh: '（輕輕拉開窗簾）早安～睡飽飽的小寶貝！', en: 'Wake up!' },
+      { speaker: 'child',  zh: '（伸懶腰）', en: 'Wake up!' },
+      { speaker: 'parent', zh: '睡得怎麼樣呀？身體有沒有很舒服？' },
+      { speaker: 'child',  zh: '（笑笑地摸摸肚子）', en: 'I feel great.' },
+      { speaker: 'parent', zh: '太棒了！我們來擊掌！', en: 'High five! Yay!' }
+    ],
+    tip: '<strong>小建議：</strong>起床後用「I feel great / I feel sleepy / I feel happy」讓孩子練習描述感受，把午睡變成情緒學習的機會。'
+  }
+];
+
+let dialogueIdx = 0;
+
+function renderDialogue() {
+  const d = DIALOGUES[dialogueIdx];
+  document.getElementById('dialogueImg').src = d.img;
+  document.getElementById('dialogueTitle').textContent = d.title;
+  document.getElementById('dialogueScene').textContent = d.scene;
+  document.getElementById('dialogueRole').innerHTML = d.role;
+  document.getElementById('dialogueIndicator').textContent = `${dialogueIdx + 1} / ${DIALOGUES.length}`;
+
+  const scriptBox = document.getElementById('dialogueScript');
+  scriptBox.innerHTML = '';
+  d.script.forEach(line => {
+    const el = document.createElement('div');
+    el.className = 'dialogue-line ' + line.speaker;
+    const avatar = line.speaker === 'parent' ? '👨‍👩‍👧' : '🧒';
+    const name = line.speaker === 'parent' ? '爸爸 / 媽媽' : '孩子';
+    let body = `<div class="dialogue-speaker">${name}</div>`;
+    if (line.zh) body += `<div class="dialogue-zh">${line.zh}</div>`;
+    if (line.en) body += `<div class="dialogue-en">${line.en}</div>`;
+    el.innerHTML = `<div class="dialogue-avatar">${avatar}</div><div class="dialogue-body">${body}</div>`;
+    scriptBox.appendChild(el);
+  });
+
+  document.getElementById('dialogueTip').innerHTML = '💡 ' + d.tip;
+
+  document.getElementById('dlgPrevBtn').disabled = dialogueIdx === 0;
+  document.getElementById('dlgNextBtn').disabled = dialogueIdx === DIALOGUES.length - 1;
+}
+
+document.getElementById('dlgPrevBtn').addEventListener('click', () => {
+  if (dialogueIdx > 0) { dialogueIdx--; renderDialogue(); }
+});
+document.getElementById('dlgNextBtn').addEventListener('click', () => {
+  if (dialogueIdx < DIALOGUES.length - 1) { dialogueIdx++; renderDialogue(); }
+});
+
+renderDialogue();
+
+/* ================ MODE: TIC-TAC-TOE VOCABULARY ================ */
+const TTT_VOCAB_SETS = [
+  // Set 1: core nap-time words
+  [
+    ['Nap',      '午睡'],
+    ['Sleep',    '睡覺'],
+    ['Quiet',    '安靜'],
+    ['Bed',      '床'],
+    ['Pillow',   '枕頭'],
+    ['Blanket',  '被子'],
+    ['Dream',    '夢'],
+    ['Wake up',  '起床'],
+    ['Shhh',     '噓'],
+  ],
+  // Set 2: feelings & body
+  [
+    ['Sleepy',   '想睡'],
+    ['Tired',    '累'],
+    ['Soft',     '柔軟'],
+    ['Warm',     '溫暖'],
+    ['Cozy',     '舒適'],
+    ['Close',    '閉上'],
+    ['Eyes',     '眼睛'],
+    ['Yawn',     '打呵欠'],
+    ['Great',    '好棒'],
+  ],
+  // Set 3: actions around nap
+  [
+    ['Lie down', '躺下'],
+    ['Rest',     '休息'],
+    ['Hug',      '抱抱'],
+    ['Dream',    '做夢'],
+    ['Tight',    '緊緊'],
+    ['One',      '一'],
+    ['Two',      '二'],
+    ['Three',    '三'],
+    ['Nighty',   '晚安'],
+  ],
+];
+
+const tttBoard      = document.getElementById('tttBoard');
+const tttStatus     = document.getElementById('tttStatus');
+const tttP1         = document.getElementById('ttt-p1');
+const tttP2         = document.getElementById('ttt-p2');
+const tttResetBtn   = document.getElementById('tttResetBtn');
+const tttShuffleBtn = document.getElementById('tttShuffleBtn');
+
+let tttSetIdx = 0, tttCells = [], tttTurn = 1, tttOver = false, tttWords = [];
+
+function tttShuffleArr(a){
+  const b=[...a];
+  for(let i=b.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [b[i],b[j]]=[b[j],b[i]];
+  }
+  return b;
+}
+function tttRenderBoard(words){
+  tttBoard.innerHTML = '';
+  tttWords = words;
+  for(let i=0;i<9;i++){
+    const cell = document.createElement('div');
+    cell.className = 'ttt-cell';
+    cell.dataset.idx = i;
+    cell.dataset.enword = words[i][0];
+    cell.innerHTML = `<div class="word-en">${words[i][0]}</div><div class="word-cn">${words[i][1]}</div>`;
+    cell.addEventListener('click', () => tttOnClick(i));
+    tttBoard.appendChild(cell);
+  }
+}
+
+/* ===== 單字發音 =====
+   優先級：
+   1. 本地預錄 m4a 檔（執行「生成可愛發音.command」後會出現在 vocab/）
+   2. Web Speech API，挑 Mac/Windows 上最自然的英文聲音（Ava Premium, Samantha Enhanced, Siri 等）
+*/
+let _tttCachedVoice = undefined;
+
+function tttPickBestEnVoice() {
+  const voices = window.speechSynthesis.getVoices();
+  if (!voices || !voices.length) return null;
+  const enVoices = voices.filter(v => /^en[-_]?/i.test(v.lang));
+  if (!enVoices.length) return null;
+  // 從最自然到最基本的優先順序
+  const namePriority = [
+    /ava.*\(premium\)/i,
+    /samantha.*\(enhanced\)/i,
+    /ava.*\(enhanced\)/i,
+    /^siri/i,
+    /karen.*\((premium|enhanced)\)/i,
+    /allison.*\(enhanced\)/i,
+    /microsoft.*aria.*natural/i,
+    /microsoft.*jenny.*natural/i,
+    /google.*us.*english/i,
+    /\((premium|enhanced)\)/i,
+    /samantha/i,   // 任何 Samantha（Mac 預設，算可接受）
+  ];
+  for (const regex of namePriority) {
+    const found = enVoices.find(v => regex.test(v.name));
+    if (found) return found;
+  }
+  // 最後的 fallback：任何 en-US
+  return enVoices.find(v => /en-?US/i.test(v.lang)) || enVoices[0] || null;
+}
+
+/* 檢查本地是否有該單字的預錄檔 (vocab/<word>.m4a) */
+const _tttAudioCache = {};       // word → Audio 物件或 false（無檔）
+function tttTryLocalAudio(word) {
+  return new Promise((resolve) => {
+    if (_tttAudioCache[word] === false) { resolve(null); return; }
+    if (_tttAudioCache[word]) { resolve(_tttAudioCache[word].cloneNode()); return; }
+    const safeName = word.toLowerCase().replace(/[^a-z0-9_\- ]/g, '').replace(/ +/g, '_');
+    if (!safeName) { resolve(null); return; }
+    // 依序嘗試：.mp3（edge-tts 微軟小女孩聲）→ .m4a（Mac say）
+    const candidates = ['vocab/' + safeName + '.mp3', 'vocab/' + safeName + '.m4a'];
+    let idx = 0;
+    let allDone = false;
+    const tryNext = () => {
+      if (allDone) return;
+      if (idx >= candidates.length) {
+        allDone = true;
+        _tttAudioCache[word] = false;
+        resolve(null);
+        return;
+      }
+      const url = candidates[idx++];
+      const a = new Audio();
+      a.preload = 'metadata';
+      let settled = false;
+      const decide = () => {
+        if (settled || allDone) return;
+        settled = true;
+        // 驗證：duration 要 > 0.1 且無 error，否則當作不存在
+        if (!a.error && a.duration > 0.1 && isFinite(a.duration)) {
+          allDone = true;
+          _tttAudioCache[word] = a;
+          resolve(a.cloneNode());
+        } else {
+          tryNext();
+        }
+      };
+      a.addEventListener('loadedmetadata', decide, { once: true });
+      a.addEventListener('canplaythrough', decide, { once: true });
+      a.addEventListener('error', () => {
+        if (settled || allDone) return;
+        settled = true;
+        tryNext();
+      }, { once: true });
+      a.src = url;
+      // 每個候選的硬性超時
+      setTimeout(() => {
+        if (settled || allDone) return;
+        settled = true;
+        tryNext();
+      }, 600);
+    };
+    tryNext();
+  });
+}
+
+async function tttSpeakWord(word){
+  // 1. 先試本地 m4a
+  try {
+    const local = await tttTryLocalAudio(word);
+    if (local) {
+      local.play().catch(() => speakViaTTS(word));
+      return;
+    }
+  } catch(e) { /* fall through */ }
+  // 2. fallback 到瀏覽器 TTS
+  speakViaTTS(word);
+}
+
+function speakViaTTS(word){
+  if(!('speechSynthesis' in window)) return;
+  try {
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(word);
+    u.lang = 'en-US';
+    u.rate = 0.88;
+    u.pitch = 1.0;
+    if (_tttCachedVoice === undefined) {
+      _tttCachedVoice = tttPickBestEnVoice();
+    }
+    if (_tttCachedVoice) u.voice = _tttCachedVoice;
+    window.speechSynthesis.speak(u);
+  } catch(e) { console.warn('TTS error', e); }
+}
+
+// 語音列表是異步載入的，voiceschanged 後重新挑一次
+if ('speechSynthesis' in window && 'onvoiceschanged' in window.speechSynthesis) {
+  window.speechSynthesis.addEventListener('voiceschanged', () => {
+    _tttCachedVoice = tttPickBestEnVoice();
+  });
+}
+function tttUpdateTurn(){
+  tttP1.classList.toggle('active', tttTurn === 1 && !tttOver);
+  tttP2.classList.toggle('active', tttTurn === 2 && !tttOver);
+  if(!tttOver){
+    tttStatus.className = 'ttt-status';
+    tttStatus.textContent = tttTurn === 1
+      ? '🔴 玩家 1 的回合 — 先唸出單字再點格子！'
+      : '🟢 玩家 2 的回合 — Say the word first!';
+  }
+}
+const TTT_LINES = [
+  [0,1,2],[3,4,5],[6,7,8],
+  [0,3,6],[1,4,7],[2,5,8],
+  [0,4,8],[2,4,6]
+];
+function tttCheckWin(){
+  for(const line of TTT_LINES){
+    const [a,b,c] = line;
+    if(tttCells[a] && tttCells[a]===tttCells[b] && tttCells[a]===tttCells[c]){
+      return { winner: tttCells[a], line };
+    }
+  }
+  if(tttCells.every(v => v !== 0)) return { winner: 0, line: null };
+  return null;
+}
+function tttOnClick(i){
+  if(tttOver || tttCells[i] !== 0) return;
+  // 點到就自動念出單字
+  if(tttWords[i]) tttSpeakWord(tttWords[i][0]);
+  tttCells[i] = tttTurn;
+  const cell = tttBoard.children[i];
+  cell.classList.add('claimed');
+  const mark = document.createElement('div');
+  mark.className = 'mark ' + (tttTurn === 1 ? 'p1' : 'p2');
+  mark.textContent = tttTurn === 1 ? 'O' : 'X';
+  cell.appendChild(mark);
+
+  const res = tttCheckWin();
+  if(res){
+    tttOver = true;
+    if(res.winner === 0){
+      tttStatus.textContent = '🤝 平手！再來一局？';
+      tttStatus.className = 'ttt-status draw';
+    } else {
+      tttStatus.textContent = res.winner === 1 ? '🎉 玩家 1 贏了！' : '🎉 玩家 2 贏了！';
+      tttStatus.className = 'ttt-status ' + (res.winner === 1 ? 'win-p1' : 'win-p2');
+      res.line.forEach(idx => tttBoard.children[idx].classList.add('win'));
+    }
+    tttP1.classList.remove('active');
+    tttP2.classList.remove('active');
+  } else {
+    tttTurn = tttTurn === 1 ? 2 : 1;
+    tttUpdateTurn();
+  }
+}
+function tttResetGame(reshuffleSet = false){
+  tttCells = new Array(9).fill(0);
+  tttTurn = 1;
+  tttOver = false;
+  if(reshuffleSet) tttSetIdx = (tttSetIdx + 1) % TTT_VOCAB_SETS.length;
+  const words = tttShuffleArr(TTT_VOCAB_SETS[tttSetIdx]);
+  tttRenderBoard(words);
+  tttUpdateTurn();
+}
+tttResetBtn.addEventListener('click',   () => tttResetGame(false));
+tttShuffleBtn.addEventListener('click', () => tttResetGame(true));
+tttResetGame(false);
+
+
+/* ================ MODE: PARENT-CHILD MISSIONS ================ */
+const MISSIONS = [
+  {
+    color: '#6a4c93',
+    titleCn: '任務 1：打造我們的「午睡開關」',
+    titleEn: 'Mission 1 — Build our "nap-time switch"',
+    why:   '幼兒的大腦需要外在訊號告訴它「該休息了」。固定的午睡儀式（換衣服→拉窗簾→抱著小被子→一本小故事）會變成身體的開關，孩子不必被強迫就會想睡。',
+    how:   '每天午睡前，用 5～10 分鐘完成同樣順序的三件小事。指著繪本第一頁：「Quietly, nap time. 我們的小貓咪也要睡了～」把繪本當成睡前暗號。',
+    stuck: '他跳起來跑掉 → 不罵、不追。輕聲說「我們在床上等你回來」，自己先躺下。通常孩子看大人安靜下來，3 分鐘內會回到床邊。',
+    cheer: '他願意躺下就是成功。給他一句「你的身體知道怎麼休息了，好厲害～」讓他對「會睡覺」產生驕傲感。',
+  },
+  {
+    color: '#7bbf6a',
+    titleCn: '任務 2：陪孩子接住「我不想睡」的情緒',
+    titleEn: 'Mission 2 — Meet the "I\'m not sleepy" together',
+    why:   '孩子不是不想睡，是怕錯過好玩的事。與其說「快睡」，不如承認他的感受：「我知道你還想玩～不過身體要休息才能玩更久喔。」',
+    how:   '用繪本的 Shhh 頁問：「你可以跟書裡的小貓一樣，當一隻小小聲的貓咪嗎？」把「閉眼 10 分鐘」當成遊戲，不是命令。',
+    stuck: '他哭鬧 → 先抱一抱，不急著要他睡著。研究顯示：只要孩子安靜躺著 20 分鐘，大腦也能獲得近似休息的效果，睡不睡其實沒關係。',
+    cheer: '他沒睡著，但安靜躺著 → 仍然讚美「你今天讓身體休息了，晚上會更有精神。」把「休息」本身當成功，不只是「睡著」。',
+  },
+  {
+    color: '#5aa8d6',
+    titleCn: '任務 3：我會自己躺下，自己蓋被子',
+    titleEn: 'Mission 3 — I can lie down and cover myself',
+    why:   '自己完成午睡流程，是孩子獨立感的重要里程碑。能自己躺下、蓋好被子、抱著枕頭入睡，他學到的是「我可以照顧自己的身體」。',
+    how:   '繪本 Page 5 數 One, Two, Three 躺下。跟孩子一起練：「我們來比賽誰可以最快把被子蓋好？」把躺下蓋被變成有節奏的小動作。',
+    stuck: '他把被子踢開、不願意蓋 → 先不要堅持蓋厚被。給他一條小薄毯或喜歡的安撫物，讓他用「自己選」的方式建立安全感。',
+    cheer: '他自己爬上床、自己蓋被 → 拍張照片給他看：「你看你自己做到了耶！」這張照片貼在床邊，是這週最棒的紀念。',
+  },
+];
+const missionList = document.getElementById('missionList');
+MISSIONS.forEach((m, idx) => {
+  const card = document.createElement('div');
+  card.className = 'mission-card' + (idx === 0 ? ' open' : '');
+  card.innerHTML = `
+    <div class="mission-head" style="background:${m.color};">
+      <div class="num" style="color:${m.color};">${idx + 1}</div>
+      <div class="titles">
+        <span class="title-cn">${m.titleCn}</span>
+        <span class="title-en">${m.titleEn}</span>
+      </div>
+      <div class="arrow">▾</div>
+    </div>
+    <div class="mission-body">
+      <div class="mission-section">
+        <span class="ms-label why">為什麼這樣做 · Why</span>
+        <div class="ms-body">${m.why}</div>
+      </div>
+      <div class="mission-section">
+        <span class="ms-label how">怎麼開始 · How to start</span>
+        <div class="ms-body">${m.how}</div>
+      </div>
+      <div class="mission-section">
+        <span class="ms-label stuck">卡住了怎麼辦 · If stuck</span>
+        <div class="ms-body">${m.stuck}</div>
+      </div>
+      <div class="mission-section">
+        <span class="ms-label cheer">完成時的慶祝 · Celebrate</span>
+        <div class="ms-body">${m.cheer}</div>
+      </div>
+    </div>
+  `;
+  card.querySelector('.mission-head').addEventListener('click', () => {
+    card.classList.toggle('open');
+  });
+  missionList.appendChild(card);
+});
+
+const TRACKER_ROWS = [
+  '午睡前我們一起拉窗簾',
+  '我願意小小聲說 Shhh',
+  '我自己躺下、自己蓋被子',
+  '我說一個今天想做的夢',
+  '起床後我會說「I feel great」',
+];
+const TRACKER_DAYS = ['一','二','三','四','五','六','日'];
+const trackerState = {};
+const trackerGrid = document.getElementById('trackerGrid');
+const headerCell = document.createElement('div');
+headerCell.className = 'row-label';
+headerCell.innerHTML = '<span style="font-size:0.85em;color:#999;">這週的小目標</span>';
+trackerGrid.appendChild(headerCell);
+TRACKER_DAYS.forEach(d => {
+  const dh = document.createElement('div');
+  dh.className = 'day-head';
+  dh.textContent = d;
+  trackerGrid.appendChild(dh);
+});
+TRACKER_ROWS.forEach((label, ri) => {
+  const l = document.createElement('div');
+  l.className = 'row-label';
+  l.textContent = label;
+  trackerGrid.appendChild(l);
+  for (let ci = 0; ci < 7; ci++) {
+    const box = document.createElement('div');
+    box.className = 'tracker-check';
+    const key = `${ri}-${ci}`;
+    box.addEventListener('click', () => {
+      trackerState[key] = !trackerState[key];
+      box.classList.toggle('checked', !!trackerState[key]);
+    });
+    trackerGrid.appendChild(box);
+  }
+});
+
+/* ==========================================================
+   💬 PARENT MESSAGE BOARD
+   ==========================================================
+   要讓不同家長看到彼此的留言 → 上 Firebase（照 Firebase 設定指南做）
+   沒設定時自動用 localStorage（只在這台瀏覽器看得到自己的留言）
+   ========================================================== */
+const BOARD_BOOK_ID = 'quietly-nap-time';
+const BOARD_FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDZAap-3IwaHO7eXTjETH4KpVsMntsvIGk",
+  authDomain: "picture-book-board.firebaseapp.com",
+  projectId: "picture-book-board",
+  appId: "1:218826557358:web:7eab48cab9adccb1116a3f",
+};
+const BOARD_TAGS = ['睡前儀式','不想睡','安撫物','睡眠環境','作息','情緒','分享小撇步','其他'];
+
+let boardMode = 'local';       // 'firestore' | 'local'
+let boardDb = null;
+let boardUnsub = null;
+let boardFilter = '';
+let boardCache = [];
+let boardLiked = new Set(JSON.parse(localStorage.getItem('pb_liked_'+BOARD_BOOK_ID) || '[]'));
+let boardInitialized = false;
+
+function boardEscapeHTML(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function boardTimeAgo(ts) {
+  if (!ts) return '';
+  const diff = Date.now() - ts;
+  if (diff < 0) return '剛剛';
+  const min = Math.floor(diff / 60000);
+  if (min < 1) return '剛剛';
+  if (min < 60) return min + ' 分鐘前';
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return hr + ' 小時前';
+  const d = Math.floor(hr / 24);
+  if (d < 30) return d + ' 天前';
+  return new Date(ts).toLocaleDateString('zh-TW');
+}
+
+function boardSetStatus(mode) {
+  const el = document.getElementById('boardStatus');
+  if (!el) return;
+  if (mode === 'online') {
+    el.className = 'board-status online';
+    el.innerHTML = '🌐 <strong>線上模式</strong>：所有家長看到同一份留言板，送出後即時同步。';
+  } else {
+    el.className = 'board-status local';
+    el.innerHTML = '💾 <strong>本機預覽模式</strong>：留言目前只存在你這台電腦的瀏覽器裡，其他家長看不到。'
+      + '想讓大家共用，請按「<em>Firebase 設定指南</em>」的三步驟設定 Firebase，再回來。';
+  }
+}
+
+function boardRenderControls() {
+  const sel = document.getElementById('boardTag');
+  sel.innerHTML = '<option value="">選一個主題（選填）…</option>'
+    + BOARD_TAGS.map(t => `<option value="${t}">${t}</option>`).join('');
+  const fil = document.getElementById('boardFilter');
+  fil.innerHTML = '<span>篩選：</span><button class="filter-chip active" data-tag="">全部</button>'
+    + BOARD_TAGS.map(t => `<button class="filter-chip" data-tag="${t}">${t}</button>`).join('');
+  fil.addEventListener('click', (e) => {
+    const btn = e.target.closest('.filter-chip');
+    if (!btn) return;
+    fil.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    boardFilter = btn.dataset.tag;
+    boardRenderList();
+  });
+
+  const text = document.getElementById('boardText');
+  const count = document.getElementById('boardCount');
+  text.addEventListener('input', () => {
+    count.textContent = text.value.length + ' / 500';
+  });
+  document.getElementById('boardPost').addEventListener('click', boardPostNew);
+}
+
+async function boardPostNew() {
+  const text = document.getElementById('boardText');
+  const body = text.value.trim();
+  if (!body) { alert('先寫點東西吧！'); return; }
+  const nick = (document.getElementById('boardNick').value.trim() || '匿名家長').slice(0, 20);
+  const tag = document.getElementById('boardTag').value;
+
+  const btn = document.getElementById('boardPost');
+  btn.disabled = true; btn.textContent = '送出中…';
+  try {
+    if (boardMode === 'firestore') {
+      await boardDb.collection('pb_board_' + BOARD_BOOK_ID).add({
+        nickname: nick, text: body, tag, likes: 0, replies: [],
+        ts: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+    } else {
+      const all = boardLoadLocal();
+      all.unshift({
+        id: 'local_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+        nickname: nick, text: body, tag, likes: 0, replies: [], ts: Date.now(),
+      });
+      boardSaveLocal(all);
+      boardCache = all;
+      boardRenderList();
+    }
+    text.value = '';
+    document.getElementById('boardTag').value = '';
+    document.getElementById('boardCount').textContent = '0 / 500';
+  } catch (err) {
+    console.error(err);
+    alert('送出失敗：' + (err.message || err));
+  } finally {
+    btn.disabled = false; btn.textContent = '送出分享';
+  }
+}
+
+function boardLoadLocal() {
+  try { return JSON.parse(localStorage.getItem('pb_board_' + BOARD_BOOK_ID) || '[]'); }
+  catch { return []; }
+}
+function boardSaveLocal(arr) {
+  localStorage.setItem('pb_board_' + BOARD_BOOK_ID, JSON.stringify(arr.slice(0, 200)));
+}
+
+function boardRenderList() {
+  const list = document.getElementById('boardList');
+  let arr = boardCache;
+  if (boardFilter) arr = arr.filter(x => x.tag === boardFilter);
+  if (!arr.length) {
+    list.innerHTML = '<div class="empty">'
+      + (boardFilter ? '目前沒有「'+boardEscapeHTML(boardFilter)+'」主題的留言。' : '還沒有留言，歡迎第一個分享心得！')
+      + '</div>';
+    return;
+  }
+  list.innerHTML = arr.map(item => {
+    const liked = boardLiked.has(item.id);
+    const replies = (item.replies || []).map(r => `
+      <div class="reply">
+        <div class="reply-meta"><b>${boardEscapeHTML(r.nickname || '匿名家長')}</b> · ${boardTimeAgo(r.ts)}</div>
+        <div class="reply-text">${boardEscapeHTML(r.text)}</div>
+      </div>`).join('');
+    return `
+      <div class="board-card" data-id="${boardEscapeHTML(item.id)}">
+        <div class="card-head">
+          <span class="nick">${boardEscapeHTML(item.nickname || '匿名家長')}</span>
+          ${item.tag ? `<span class="tag-chip">${boardEscapeHTML(item.tag)}</span>` : ''}
+          <span class="time">${boardTimeAgo(item.ts)}</span>
+        </div>
+        <div class="card-text">${boardEscapeHTML(item.text)}</div>
+        <div class="card-actions">
+          <button class="heart${liked ? ' liked' : ''}" data-act="like" data-id="${boardEscapeHTML(item.id)}">
+            ♥ <span class="like-count">${item.likes || 0}</span>
+          </button>
+          <button class="reply-btn" data-act="reply-toggle" data-id="${boardEscapeHTML(item.id)}">回覆 (${(item.replies||[]).length})</button>
+        </div>
+        ${replies ? `<div class="replies">${replies}</div>` : ''}
+        <div class="reply-box" id="replybox-${boardEscapeHTML(item.id)}" style="display:none;">
+          <input class="reply-nick" placeholder="暱稱（空白=匿名）" maxlength="20">
+          <textarea class="reply-text-input" placeholder="寫下你的回覆…" maxlength="300"></textarea>
+          <div class="reply-foot">
+            <button class="reply-cancel" data-act="reply-cancel" data-id="${boardEscapeHTML(item.id)}">取消</button>
+            <button class="reply-send" data-act="reply-send" data-id="${boardEscapeHTML(item.id)}">送出回覆</button>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+
+  list.querySelectorAll('[data-act]').forEach(btn => {
+    btn.addEventListener('click', boardHandleAction);
+  });
+}
+
+async function boardHandleAction(e) {
+  const btn = e.currentTarget;
+  const act = btn.dataset.act;
+  const id = btn.dataset.id;
+  if (act === 'like') {
+    if (boardLiked.has(id)) return;
+    boardLiked.add(id);
+    localStorage.setItem('pb_liked_'+BOARD_BOOK_ID, JSON.stringify([...boardLiked]));
+    btn.classList.add('liked');
+    const c = btn.querySelector('.like-count');
+    c.textContent = parseInt(c.textContent || '0', 10) + 1;
+    if (boardMode === 'firestore') {
+      try {
+        await boardDb.collection('pb_board_'+BOARD_BOOK_ID).doc(id).update({
+          likes: firebase.firestore.FieldValue.increment(1)
+        });
+      } catch (err) { console.warn('like update failed', err); }
+    } else {
+      const all = boardLoadLocal();
+      const it = all.find(x => x.id === id);
+      if (it) { it.likes = (it.likes||0)+1; boardSaveLocal(all); }
+    }
+  } else if (act === 'reply-toggle') {
+    const box = document.getElementById('replybox-' + id);
+    box.style.display = box.style.display === 'none' ? 'block' : 'none';
+  } else if (act === 'reply-cancel') {
+    document.getElementById('replybox-' + id).style.display = 'none';
+  } else if (act === 'reply-send') {
+    const box = document.getElementById('replybox-' + id);
+    const nick = (box.querySelector('.reply-nick').value.trim() || '匿名家長').slice(0, 20);
+    const txt = box.querySelector('.reply-text-input').value.trim();
+    if (!txt) { alert('先寫點東西吧！'); return; }
+    const reply = { nickname: nick, text: txt, ts: Date.now() };
+    if (boardMode === 'firestore') {
+      try {
+        await boardDb.collection('pb_board_'+BOARD_BOOK_ID).doc(id).update({
+          replies: firebase.firestore.FieldValue.arrayUnion(reply)
+        });
+      } catch (err) { alert('送出失敗：' + err.message); return; }
+    } else {
+      const all = boardLoadLocal();
+      const it = all.find(x => x.id === id);
+      if (it) {
+        it.replies = it.replies || [];
+        it.replies.push(reply);
+        boardSaveLocal(all);
+        boardCache = all;
+        boardRenderList();
+      }
+    }
+    box.querySelector('.reply-text-input').value = '';
+    box.style.display = 'none';
+  }
+}
+
+function boardInit() {
+  boardRenderControls();
+  const hasConfig = BOARD_FIREBASE_CONFIG && BOARD_FIREBASE_CONFIG.apiKey;
+  if (hasConfig && typeof firebase !== 'undefined' && firebase.initializeApp) {
+    try {
+      firebase.initializeApp(BOARD_FIREBASE_CONFIG);
+      boardDb = firebase.firestore();
+      boardMode = 'firestore';
+      boardSetStatus('online');
+      boardUnsub = boardDb.collection('pb_board_' + BOARD_BOOK_ID)
+        .orderBy('ts', 'desc')
+        .limit(200)
+        .onSnapshot(snap => {
+          boardCache = snap.docs.map(d => {
+            const data = d.data();
+            return {
+              id: d.id,
+              nickname: data.nickname,
+              text: data.text,
+              tag: data.tag,
+              likes: data.likes || 0,
+              replies: data.replies || [],
+              ts: (data.ts && data.ts.toMillis) ? data.ts.toMillis() : (data.ts || Date.now()),
+            };
+          });
+          boardRenderList();
+        }, err => {
+          console.error('Firestore listener error, falling back to local:', err);
+          boardMode = 'local';
+          boardSetStatus('local');
+          boardCache = boardLoadLocal();
+          boardRenderList();
+        });
+    } catch (err) {
+      console.warn('Firebase init failed, using local mode:', err);
+      boardMode = 'local';
+      boardSetStatus('local');
+      boardCache = boardLoadLocal();
+      boardRenderList();
+    }
+  } else {
+    boardMode = 'local';
+    boardSetStatus('local');
+    boardCache = boardLoadLocal();
+    boardRenderList();
+  }
+}
+
+// Initialize on first click of 家長留言板 tab (avoid Firebase network hit if unused)
+document.querySelectorAll('[data-mode="board"]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (!boardInitialized) {
+      boardInit();
+      boardInitialized = true;
+    }
+  });
+});
+</script>
+
+<footer class="site-footer">
+  <div class="sf-main">亞洲大學幼兒教育學系　幼兒教育科技實驗室</div>
+  <div class="sf-sub-label">本數位教材受到以下計畫補助設計開發</div>
+  <div class="sf-grants">
+    <p>教育部：與智慧科技共學：偏鄉國中與社區高中語言學伴培育計畫</p>
+    <p>國科會：機器人結合 AI 教學代理人促進幼兒社會情緒學習之設計、開發與評估</p>
+  </div>
+</footer>
+
+</body>
+</html>
