@@ -1,0 +1,3012 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My First Day at School - 互動繪本</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Comic Sans MS', 'Trebuchet MS', sans-serif;
+    background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 50%, #a1c4fd 100%);
+    min-height: 100vh;
+    padding: 20px;
+    color: #333;
+  }
+
+  h1 {
+    text-align: center;
+    color: #ff6b6b;
+    font-size: 2.5em;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .subtitle {
+    text-align: center;
+    color: #555;
+    margin-bottom: 20px;
+    font-size: 1.1em;
+  }
+
+  /* Mode switcher */
+  .mode-switcher {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+  }
+
+  .mode-btn {
+    padding: 12px 22px;
+    font-size: 1.05em;
+    font-weight: bold;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    background: white;
+    color: #555;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    transition: all 0.25s;
+    font-family: inherit;
+  }
+
+  .mode-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.2); }
+
+  .mode-btn.active {
+    background: linear-gradient(135deg, #ff6b6b, #ffa726);
+    color: white;
+    transform: translateY(-2px);
+  }
+  /* Home button — links back to ../index.html, styled like mode-btn but distinct */
+  .home-btn {
+    padding: 12px 22px;
+    font-size: 1.05em;
+    font-weight: bold;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    background: #F4EBD8;
+    color: #6B5A3F;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    transition: all 0.25s;
+    font-family: inherit;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .home-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+    background: #EADFC5;
+    color: #4A3520;
+  }
+
+
+  .mode-content { display: none; max-width: 1000px; margin: 0 auto; }
+  .mode-content.active { display: block; }
+
+  /* ------------- MODE 1: Story ------------- */
+  .story-container {
+    background: white;
+    border-radius: 24px;
+    padding: 30px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    text-align: center;
+  }
+
+  .page-indicator {
+    font-size: 1.3em;
+    font-weight: bold;
+    color: #ff6b6b;
+    margin-bottom: 15px;
+  }
+
+  .story-image-wrap {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+
+  .story-image {
+    display: block;
+    max-width: 100%;
+    max-height: 60vh;
+    height: auto;
+  }
+
+  .page-title {
+    margin-top: 20px;
+    font-size: 1.4em;
+    font-weight: bold;
+    color: #ff7043;
+    letter-spacing: 1px;
+  }
+
+  .narration {
+    margin: 15px auto 5px;
+    max-width: 750px;
+    padding: 18px 22px;
+    background: linear-gradient(135deg, #fff9e6, #fff3d9);
+    border-left: 6px solid #ffa726;
+    border-radius: 12px;
+    text-align: left;
+    font-size: 1.08em;
+    line-height: 1.9;
+    color: #444;
+    box-shadow: inset 0 0 0 1px rgba(255,167,38,0.15);
+  }
+
+  .narration .en {
+    color: #1976d2;
+    font-weight: bold;
+    background: #e3f2fd;
+    padding: 1px 6px;
+    border-radius: 6px;
+  }
+
+  .narration .zh-trans {
+    color: #777;
+    font-size: 0.95em;
+  }
+
+  .speaker-controls {
+    margin-top: 18px;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .speaker-btn.primary-narrate {
+    width: auto;
+    height: 64px;
+    padding: 0 26px;
+    border-radius: 32px;
+    font-size: 1.15em;
+    font-weight: bold;
+    background: linear-gradient(135deg, #ff7043, #ff9800);
+    box-shadow: 0 4px 14px rgba(255,112,67,0.5);
+    gap: 8px;
+  }
+
+  .speaker-btn.primary-narrate.playing {
+    animation: narratePulse 1.2s infinite;
+  }
+
+  @keyframes narratePulse {
+    0%, 100% { box-shadow: 0 4px 14px rgba(255,112,67,0.5); transform: scale(1); }
+    50% { box-shadow: 0 6px 22px rgba(255,152,0,0.9); transform: scale(1.04); }
+  }
+
+  .english-audio-label {
+    color: #777;
+    font-size: 0.9em;
+    margin-right: 4px;
+  }
+
+  .speaker-btn {
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    color: white;
+    border: none;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    font-size: 2.2em;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(79,172,254,0.5);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .speaker-btn:hover { transform: scale(1.1); }
+  .speaker-btn:active { transform: scale(0.95); }
+  .speaker-btn.playing { animation: pulse 1s infinite; }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 4px 12px rgba(79,172,254,0.5); }
+    50% { box-shadow: 0 4px 24px rgba(79,172,254,0.9); transform: scale(1.05); }
+  }
+
+  .speaker-btn.secondary { background: linear-gradient(135deg, #f093fb, #f5576c); }
+
+  .speaker-label { color: #666; font-size: 0.9em; }
+
+  .nav-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 25px;
+    gap: 10px;
+  }
+
+  .nav-btn {
+    padding: 12px 28px;
+    background: linear-gradient(135deg, #66bb6a, #43a047);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    font-size: 1.1em;
+    font-weight: bold;
+    cursor: pointer;
+    font-family: inherit;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    transition: all 0.2s;
+  }
+
+  .nav-btn:hover:not(:disabled) { transform: translateY(-2px); }
+  .nav-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ------------- MODE 2: Card Sorting ------------- */
+  .game-container {
+    background: white;
+    border-radius: 24px;
+    padding: 25px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  }
+
+  .game-instruction {
+    text-align: center;
+    font-size: 1.2em;
+    color: #555;
+    margin-bottom: 20px;
+  }
+
+  .game-area {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+    min-height: 200px;
+    padding: 15px;
+    background: #fff5e6;
+    border-radius: 16px;
+    border: 3px dashed #ffa726;
+  }
+
+  .card {
+    aspect-ratio: 1 / 1;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: grab;
+    position: relative;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+    transition: transform 0.2s, box-shadow 0.2s;
+    user-select: none;
+  }
+
+  .card:hover { transform: translateY(-4px); box-shadow: 0 6px 14px rgba(0,0,0,0.22); }
+  .card.dragging { opacity: 0.5; cursor: grabbing; }
+  .card.drag-over { transform: scale(1.05); box-shadow: 0 0 0 4px #4facfe; }
+
+  .card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+  }
+
+  .card-number {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 0.9em;
+  }
+
+  .card.correct { box-shadow: 0 0 0 4px #4caf50; }
+  .card.incorrect { box-shadow: 0 0 0 4px #f44336; }
+
+  .game-controls {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+
+  .game-btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 50px;
+    font-size: 1.05em;
+    font-weight: bold;
+    cursor: pointer;
+    font-family: inherit;
+    color: white;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    transition: transform 0.15s;
+  }
+
+  .game-btn:hover { transform: translateY(-2px); }
+  .game-btn.shuffle { background: linear-gradient(135deg, #ffa726, #ff7043); }
+  .game-btn.check { background: linear-gradient(135deg, #42a5f5, #1e88e5); }
+  .game-btn.reset { background: linear-gradient(135deg, #ab47bc, #8e24aa); }
+
+  .game-result {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 1.3em;
+    font-weight: bold;
+    min-height: 1.5em;
+  }
+
+  .result-success { color: #4caf50; }
+  .result-fail { color: #f44336; }
+
+    /* ------------- MODE 2: Sentence Sort ------------- */
+  .sentence-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+  .sentence-tab {
+    padding: 8px 18px;
+    border: 2px solid #ffa726;
+    background: white;
+    color: #ff7043;
+    border-radius: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.95em;
+    transition: transform 0.15s;
+  }
+  .sentence-tab:hover { transform: translateY(-1px); }
+  .sentence-tab.active {
+    background: linear-gradient(135deg, #ffa726, #ff7043);
+    color: white;
+    border-color: transparent;
+  }
+
+  .sentence-zone {
+    background: #fff5e6;
+    border: 3px dashed #ffa726;
+    border-radius: 16px;
+    padding: 18px;
+  }
+  .sentence-target {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    min-height: 76px;
+    padding: 14px;
+    background: white;
+    border-radius: 12px;
+    margin-bottom: 14px;
+  }
+  .sentence-slot {
+    min-width: 78px;
+    height: 56px;
+    border: 2px dashed #ddd;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fafafa;
+    transition: background 0.2s, border-color 0.2s;
+    padding: 0 6px;
+  }
+  .sentence-slot.over { background: #fff3e0; border-color: #ff7043; border-style: solid; }
+  .sentence-slot.correct { border-style: solid; border-color: #4caf50; background: #e8f5e9; }
+  .sentence-slot.incorrect { border-style: solid; border-color: #f44336; background: #ffebee; }
+
+  .sentence-bank-label {
+    text-align: center;
+    color: #999;
+    font-size: 0.92em;
+    margin: 6px 0 8px;
+  }
+  .sentence-bank {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    min-height: 64px;
+    padding: 12px;
+    background: white;
+    border-radius: 12px;
+  }
+  .sentence-bank.over { background: #fff3e0; }
+
+  .sentence-tile {
+    padding: 10px 18px;
+    background: linear-gradient(135deg, #66bb6a, #43a047);
+    color: white;
+    border-radius: 28px;
+    font-weight: bold;
+    cursor: grab;
+    font-size: 1.05em;
+    user-select: none;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.18);
+    transition: transform 0.15s, box-shadow 0.15s;
+    touch-action: none;
+  }
+  .sentence-tile:hover { transform: translateY(-2px); box-shadow: 0 5px 12px rgba(0,0,0,0.22); }
+  .sentence-tile:active { cursor: grabbing; }
+  .sentence-tile.dragging { opacity: 0.4; }
+  .sentence-tile.in-slot {
+    background: linear-gradient(135deg, #42a5f5, #1e88e5);
+    cursor: pointer;
+  }
+
+  @media (max-width: 600px) {
+    .sentence-tile { padding: 8px 14px; font-size: 1em; }
+    .sentence-slot { min-width: 60px; height: 46px; }
+    .sentence-tab  { padding: 6px 12px; font-size: 0.88em; }
+  }
+
+  /* ------------- MODE 3: Theme Song with Karaoke ------------- */
+  .song-container {
+    background: white;
+    border-radius: 24px;
+    padding: 30px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  }
+
+  .song-header { text-align: center; margin-bottom: 20px; }
+
+  .song-title {
+    font-size: 2em;
+    color: #ff6b6b;
+    margin-bottom: 8px;
+  }
+
+  .audio-player {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 25px;
+  }
+
+  .audio-player audio { width: 100%; border-radius: 12px; }
+
+  .karaoke-hint {
+    text-align: center;
+    color: #fff;
+    font-size: 0.9em;
+    margin-top: 8px;
+    opacity: 0.85;
+  }
+
+  .lyrics {
+    background: #fff9e6;
+    border-radius: 16px;
+    padding: 25px;
+    font-size: 1.1em;
+    line-height: 1.9;
+  }
+
+  .verse {
+    margin-bottom: 20px;
+    padding: 15px;
+    border-left: 5px solid #ffa726;
+    background: white;
+    border-radius: 10px;
+    transition: all 0.3s;
+  }
+
+  .verse.active-verse {
+    border-left-color: #ff6b6b;
+    background: #fff0f0;
+    box-shadow: 0 4px 12px rgba(255,107,107,0.25);
+    transform: translateX(5px);
+  }
+
+  .verse-title {
+    font-weight: bold;
+    color: #ff6b6b;
+    margin-bottom: 8px;
+    font-size: 1.05em;
+  }
+
+  .verse-line {
+    margin-left: 15px;
+    color: #444;
+    padding: 4px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+
+  .verse-line:hover { background: #fff3e0; }
+
+  .verse-line.active-line {
+    background: linear-gradient(135deg, #ffd54f, #ffb300);
+    color: #333;
+    font-weight: bold;
+    transform: scale(1.08);
+    transform-origin: left;
+    box-shadow: 0 2px 8px rgba(255,193,7,0.5);
+  }
+
+  .verse-action {
+    color: #7e57c2;
+    font-style: italic;
+    font-size: 0.95em;
+    margin-left: 15px;
+    margin-top: 4px;
+  }
+
+  /* ------------- MODE: Teacher Podcast ------------- */
+  .teacher-container {
+    background: white;
+    border-radius: 24px;
+    padding: 35px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    text-align: center;
+  }
+
+  .teacher-avatar {
+    font-size: 5em;
+    margin-bottom: 10px;
+    animation: wiggle 3s ease-in-out infinite;
+  }
+
+  @keyframes wiggle {
+    0%, 100% { transform: rotate(-5deg); }
+    50% { transform: rotate(5deg); }
+  }
+
+  .teacher-title {
+    font-size: 2em;
+    color: #ff6b6b;
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+
+  .teacher-subtitle {
+    color: #777;
+    margin-bottom: 25px;
+    font-size: 1.05em;
+  }
+
+  .teacher-audio-box {
+    background: linear-gradient(135deg, #ffecd2, #fcb69f);
+    border-radius: 20px;
+    padding: 25px;
+    margin-bottom: 20px;
+  }
+
+  .teacher-audio-box audio {
+    width: 100%;
+    border-radius: 12px;
+  }
+
+  .teacher-note {
+    background: #fff9e6;
+    border-left: 5px solid #ffa726;
+    border-radius: 10px;
+    padding: 15px 20px;
+    text-align: left;
+    color: #555;
+    line-height: 1.8;
+  }
+
+  /* ------------- MODE: Parent-Child Dialogue ------------- */
+  .dialogue-container {
+    background: white;
+    border-radius: 24px;
+    padding: 25px 30px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  }
+
+  .dialogue-top {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+  }
+
+  .dialogue-thumb {
+    flex: 0 0 180px;
+    max-width: 180px;
+    aspect-ratio: 1 / 1;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.18);
+  }
+
+  .dialogue-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+  .dialogue-header { flex: 1; min-width: 220px; }
+
+  .dialogue-title {
+    font-size: 1.35em;
+    color: #ff6b6b;
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+
+  .dialogue-scene {
+    display: inline-block;
+    background: linear-gradient(135deg, #b2ebf2, #80deea);
+    color: #006064;
+    padding: 5px 12px;
+    border-radius: 12px;
+    font-size: 0.92em;
+    font-weight: bold;
+    margin-bottom: 6px;
+  }
+
+  .dialogue-role {
+    color: #555;
+    font-size: 0.98em;
+    line-height: 1.55;
+  }
+
+  .dialogue-script {
+    background: #fafafa;
+    border-radius: 14px;
+    padding: 18px;
+    margin: 15px 0;
+  }
+
+  .dialogue-line {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 12px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    line-height: 1.7;
+  }
+
+  .dialogue-line:last-child { margin-bottom: 0; }
+
+  .dialogue-line.parent {
+    background: #e8f5e9;
+    border-left: 4px solid #66bb6a;
+  }
+
+  .dialogue-line.child {
+    background: #fce4ec;
+    border-left: 4px solid #ec407a;
+  }
+
+  .dialogue-avatar {
+    flex: 0 0 auto;
+    font-size: 1.6em;
+    line-height: 1;
+  }
+
+  .dialogue-body { flex: 1; }
+
+  .dialogue-speaker {
+    font-weight: bold;
+    color: #444;
+    font-size: 0.92em;
+    margin-bottom: 3px;
+  }
+
+  .dialogue-zh { color: #333; }
+
+  .dialogue-en {
+    display: inline-block;
+    margin-top: 4px;
+    padding: 2px 10px;
+    background: #e3f2fd;
+    color: #1565c0;
+    border-radius: 8px;
+    font-weight: bold;
+  }
+
+  .dialogue-tip {
+    background: linear-gradient(135deg, #fff9e6, #ffecb3);
+    border-radius: 12px;
+    padding: 14px 18px;
+    color: #5d4037;
+    line-height: 1.75;
+    font-size: 0.98em;
+  }
+
+  .dialogue-tip strong { color: #e65100; }
+
+  @media (max-width: 600px) {
+    .dialogue-thumb { flex: 0 0 100%; max-width: 100%; aspect-ratio: 16 / 10; }
+  }
+
+  /* ------------- MODE 4: Listening Cards ------------- */
+  .listen-container {
+    background: white;
+    border-radius: 24px;
+    padding: 25px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  }
+
+  .listen-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 14px;
+  }
+
+  .listen-card {
+    aspect-ratio: 1 / 1;
+    background: #fff;
+    border-radius: 14px;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .listen-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 8px 18px rgba(0,0,0,0.25);
+  }
+
+  .listen-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+  }
+
+  .listen-card-label {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: rgba(255,107,107,0.92);
+    color: white;
+    padding: 5px 12px;
+    border-radius: 14px;
+    font-weight: bold;
+    font-size: 0.95em;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+
+  .listen-card-speaker {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(79,172,254,0.92);
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3em;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    transition: transform 0.2s;
+  }
+
+  .listen-card:hover .listen-card-speaker { transform: scale(1.15); }
+
+  .listen-card.playing {
+    z-index: 10;
+    animation: cardZoomPulse 1.3s ease-in-out infinite;
+  }
+
+  .listen-card.playing .listen-card-speaker {
+    background: #ff6b6b;
+    animation: pulse 0.9s infinite;
+  }
+
+  @keyframes cardZoomPulse {
+    0% {
+      transform: scale(1.15);
+      box-shadow: 0 0 0 5px #4facfe, 0 12px 28px rgba(79,172,254,0.5);
+    }
+    50% {
+      transform: scale(1.25);
+      box-shadow: 0 0 0 9px #00f2fe, 0 18px 44px rgba(0,242,254,0.7);
+    }
+    100% {
+      transform: scale(1.15);
+      box-shadow: 0 0 0 5px #4facfe, 0 12px 28px rgba(79,172,254,0.5);
+    }
+  }
+
+  /* Quick pop-in when the card starts playing */
+  .listen-card.playing.pop-in {
+    animation: cardPopIn 0.35s ease-out, cardZoomPulse 1.3s ease-in-out 0.35s infinite;
+  }
+
+  @keyframes cardPopIn {
+    0%   { transform: scale(1); }
+    60%  { transform: scale(1.32); }
+    100% { transform: scale(1.15); }
+  }
+
+  @media (max-width: 600px) {
+    h1 { font-size: 1.8em; }
+    .mode-btn { padding: 9px 14px; font-size: 0.95em; }
+    .speaker-btn { width: 60px; height: 60px; font-size: 1.6em; }
+    .game-area { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
+    .listen-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+    .listen-card-speaker { width: 32px; height: 32px; font-size: 1em; }
+  }
+
+  /* ============ MODE: TIC-TAC-TOE VOCABULARY ============ */
+  .ttt-container { background:white; border-radius:24px; padding:30px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.12); text-align:center; }
+  .ttt-instruction { font-size:1.1em; color:#555; margin-bottom:14px; line-height:1.55; }
+  .ttt-players { display:flex; justify-content:center; gap:18px;
+    margin-bottom:18px; flex-wrap:wrap; }
+  .ttt-player { padding:10px 20px; border-radius:16px; background:#f5f5f5;
+    font-weight:bold; font-size:1.05em; color:#666;
+    border:3px solid transparent; transition:all 0.2s; }
+  .ttt-player.active { background:linear-gradient(135deg,#ffe0e0,#ffd4d4);
+    border-color:#ff6b6b; color:#d32f2f; transform:scale(1.06); }
+  .ttt-player.active.p2 { background:linear-gradient(135deg,#dde9ff,#c8d8ff);
+    border-color:#5a7fff; color:#2c4bd0; }
+  .ttt-board { display:grid; grid-template-columns:repeat(3,1fr); gap:10px;
+    max-width:480px; margin:0 auto 16px; }
+  .ttt-cell { aspect-ratio:1/1;
+    background:linear-gradient(135deg,#eaf2ff 0%,#d8e6ff 100%);
+    border:3px solid #a1c4fd; border-radius:18px;
+    cursor:pointer; display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    position:relative; padding:6px;
+    transition:transform 0.15s, box-shadow 0.2s; overflow:hidden; }
+  .ttt-cell:hover:not(.claimed) { transform:translateY(-3px) scale(1.03);
+    box-shadow:0 6px 14px rgba(0,0,0,0.15); }
+  .ttt-cell .word-en { font-size:1.1em; font-weight:bold; color:#2c4bd0; line-height:1.15; }
+  .ttt-cell .word-cn { font-size:0.82em; color:#5a6fa0; margin-top:3px; }
+  .ttt-cell.claimed { cursor:default; }
+  .ttt-cell .mark { position:absolute; top:50%; left:50%;
+    transform:translate(-50%,-50%); font-size:3.8em; font-weight:900;
+    pointer-events:none; animation:ttt-pop 0.35s ease-out;
+    text-shadow:2px 2px 0 rgba(255,255,255,0.7); }
+  .ttt-cell .mark.p1 { color:#ff5252; }
+  .ttt-cell .mark.p2 { color:#3d5afe; }
+  .ttt-cell.claimed .word-en, .ttt-cell.claimed .word-cn { opacity:0.3; }
+  .ttt-cell.win { background:linear-gradient(135deg,#c8f7c5 0%,#a6eaa1 100%);
+    border-color:#66bb6a; animation:ttt-winpulse 0.9s ease-out 2; }
+  @keyframes ttt-pop {
+    0% { transform:translate(-50%,-50%) scale(0.1); opacity:0; }
+    80% { transform:translate(-50%,-50%) scale(1.15); opacity:1; }
+    100% { transform:translate(-50%,-50%) scale(1); } }
+  @keyframes ttt-winpulse {
+    0%,100% { box-shadow:0 0 0 0 rgba(102,187,106,0.6); }
+    50% { box-shadow:0 0 18px 4px rgba(102,187,106,0.8); } }
+  .ttt-controls { display:flex; justify-content:center; gap:12px;
+    flex-wrap:wrap; margin-top:10px; }
+  .ttt-btn { padding:12px 24px; border:none; border-radius:50px;
+    font-size:1em; font-weight:bold; cursor:pointer; font-family:inherit;
+    color:white; box-shadow:0 3px 6px rgba(0,0,0,0.15);
+    transition:transform 0.15s; }
+  .ttt-btn:hover { transform:translateY(-2px); }
+  .ttt-btn.reset { background:linear-gradient(135deg,#4facfe,#00f2fe); }
+  .ttt-btn.reshuffle { background:linear-gradient(135deg,#f093fb,#f5576c); }
+  .ttt-status { font-size:1.2em; font-weight:bold; margin-top:14px;
+    min-height:1.4em; color:#555; }
+  .ttt-status.win-p1 { color:#d32f2f; }
+  .ttt-status.win-p2 { color:#2c4bd0; }
+  .ttt-status.draw { color:#888; }
+
+  /* ============ MODE: PARENT-CHILD MISSIONS ============ */
+  .parent-container { background:white; border-radius:24px; padding:30px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.12); }
+  .parent-intro {
+    background:linear-gradient(135deg,#e5ebff 0%,#f0e8ff 100%);
+    border-left:6px solid #5a6fd4; border-radius:14px;
+    padding:18px 22px; margin-bottom:22px;
+    font-size:0.98em; line-height:1.65; color:#3a3a5e; }
+  .parent-intro strong { color:#5a6fd4; }
+  .mission-card { border-radius:18px; margin-bottom:18px; overflow:hidden;
+    box-shadow:0 3px 10px rgba(0,0,0,0.08); border:1px solid #eee; }
+  .mission-head { padding:16px 22px; display:flex; align-items:center;
+    gap:14px; cursor:pointer; color:white; font-weight:bold;
+    user-select:none; transition:filter 0.2s; }
+  .mission-head:hover { filter:brightness(1.06); }
+  .mission-head .num { width:34px; height:34px; background:white;
+    color:inherit; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:900; font-size:1.15em; flex-shrink:0; }
+  .mission-head .titles { flex:1; line-height:1.3; }
+  .mission-head .title-cn { font-size:1.08em; }
+  .mission-head .title-en { font-size:0.82em; font-style:italic;
+    font-weight:normal; opacity:0.9; display:block; margin-top:2px; }
+  .mission-head .arrow { font-size:1.4em; transition:transform 0.25s; }
+  .mission-card.open .mission-head .arrow { transform:rotate(180deg); }
+  .mission-body { max-height:0; overflow:hidden;
+    transition:max-height 0.35s ease; background:#fafbff; }
+  .mission-card.open .mission-body { max-height:900px; }
+  .mission-section { padding:14px 22px; border-top:1px solid #eee; }
+  .mission-section:first-child { border-top:none; }
+  .ms-label { display:inline-block; padding:4px 12px; border-radius:14px;
+    color:white; font-size:0.82em; font-weight:bold; margin-bottom:8px; }
+  .ms-label.why { background:#5a6fd4; }
+  .ms-label.how { background:#4fbfa8; }
+  .ms-label.stuck { background:#f28c8c; }
+  .ms-label.cheer { background:#f4b942; }
+  .ms-body { font-size:0.96em; line-height:1.65; color:#333; }
+
+  .dialogue-box { background:#faf5ff; border:2px dashed #a891d4;
+    border-radius:16px; padding:18px 20px; margin-top:20px; }
+  .dialogue-box h3 { color:#7860b8; margin-bottom:4px; font-size:1.1em; }
+  .dialogue-box .sub { font-size:0.85em; color:#999;
+    font-style:italic; margin-bottom:12px; }
+  .dialogue-table { width:100%; border-collapse:collapse; font-size:0.93em; }
+  .dialogue-table th { text-align:left; padding:8px 10px; font-size:0.88em; }
+  .dialogue-table th.bad { color:#f28c8c; }
+  .dialogue-table th.good { color:#4fbfa8; }
+  .dialogue-table td { padding:8px 10px; vertical-align:top; line-height:1.5; }
+  .dialogue-table td.bad { color:#999; width:45%; }
+  .dialogue-table td.good { color:#333; font-weight:500; }
+  .dialogue-table tr + tr td { border-top:1px dashed #e0e0e0; }
+
+  .tracker-box { background:#fff8e7; border:2px solid #f4b942;
+    border-radius:16px; padding:18px 20px; margin-top:20px; }
+  .tracker-box h3 { color:#c68b00; margin-bottom:4px; font-size:1.1em; }
+  .tracker-box .sub { font-size:0.85em; color:#999;
+    font-style:italic; margin-bottom:14px; }
+  .tracker-grid { display:grid;
+    grid-template-columns:minmax(140px,1.6fr) repeat(7,1fr);
+    gap:6px; align-items:center; font-size:0.88em; }
+  .tracker-grid .day-head { text-align:center; font-weight:bold; color:#888; padding:4px 0; }
+  .tracker-grid .row-label { padding:5px 4px; color:#333; line-height:1.35; }
+  .tracker-check { width:22px; height:22px; border:2px solid #ccc;
+    border-radius:5px; background:white; cursor:pointer;
+    margin:0 auto; display:block; transition:all 0.15s; }
+  .tracker-check:hover { border-color:#f4b942; }
+  .tracker-check.checked { background:#f4b942; border-color:#c68b00; position:relative; }
+  .tracker-check.checked::after { content:'✓'; position:absolute;
+    top:50%; left:50%; transform:translate(-50%,-55%);
+    color:white; font-weight:900; font-size:1em; }
+
+  .reflect-box { background:#faf7f3; border:2px solid #7e6656;
+    border-radius:16px; padding:18px 20px; margin-top:20px; }
+  .reflect-box h3 { color:#7e6656; margin-bottom:4px; font-size:1.1em; }
+  .reflect-box .sub { font-size:0.85em; color:#999;
+    font-style:italic; margin-bottom:12px; }
+  .reflect-box .prompt { color:#333; font-weight:500; font-size:0.96em;
+    margin-bottom:4px; margin-top:12px; }
+  .reflect-box textarea { width:100%; min-height:54px; border:none;
+    border-bottom:1.5px dashed #c2ad95; background:transparent;
+    font-family:inherit; font-size:0.95em; padding:6px 4px;
+    resize:vertical; outline:none; color:#333; }
+  .reflect-box textarea:focus { border-bottom-color:#7e6656;
+    background:rgba(126,102,86,0.04); }
+
+  @media (max-width:600px) {
+    .ttt-board { max-width:100%; gap:6px; }
+    .ttt-cell .word-en { font-size:0.92em; }
+    .ttt-cell .word-cn { font-size:0.7em; }
+    .tracker-grid { font-size:0.75em;
+      grid-template-columns:minmax(90px,1.4fr) repeat(7,1fr); gap:4px; }
+    .tracker-check { width:18px; height:18px; }
+    .mission-head { padding:14px 16px; }
+    .mission-section { padding:12px 16px; }
+    .dialogue-table th, .dialogue-table td { padding:6px 4px; font-size:0.85em; }
+  }
+
+  /* ===== 🎤 跟讀錄音 ===== */
+  .audio-group { display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(238,242,255,0.8); padding: 4px 8px 4px 4px;
+    border-radius: 46px; border: 1.5px solid rgba(90,127,255,0.25); }
+  .rec-btn, .play-rec-btn {
+    width: 46px; height: 46px; border-radius: 50%;
+    border: 2px solid #8ea4ff; background: white; cursor: pointer;
+    font-size: 1.15em; display: inline-flex; align-items: center;
+    justify-content: center; transition: all 0.2s; }
+  .rec-btn:hover, .play-rec-btn:hover:not(:disabled) { transform: scale(1.08); }
+  .rec-btn.recording { background: #ffebee; border-color: #e53935; color: #c62828;
+    animation: recPulse 1s infinite; }
+  @keyframes recPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(229,57,53,0.55); }
+    50% { box-shadow: 0 0 0 10px rgba(229,57,53,0); }
+  }
+  .play-rec-btn:disabled { opacity: 0.35; cursor: not-allowed; border-color: #ddd; }
+  .play-rec-btn.has-rec { background: #e8f5e9; border-color: #4caf50; color: #2e7d32; }
+  .play-rec-btn.playing { background: #e3f2fd; border-color: #2196f3;
+    animation: recPulse 1s infinite; }
+  .rec-hint { flex-basis: 100%; width: 100%; text-align: center;
+    font-size: 0.82em; color: #888; margin-top: 6px; }
+  @media (max-width:620px) {
+    .rec-btn, .play-rec-btn { width: 40px; height: 40px; }
+    .audio-group { padding: 3px 5px 3px 3px; gap: 4px; }
+  }
+
+  /* ===== 💬 家長留言板 ===== */
+  :root {
+    --board-primary: #5a7fff;
+    --board-primary-dark: #2c4bd0;
+    --board-bg-tint: #eef2ff;
+    --board-chip-bg: #dde5ff;
+    --board-chip-text: #1e3ab2;
+    --board-accent: #4fbfa8;
+  }
+  .board-wrap { max-width:860px; margin:0 auto; padding:0 8px; }
+  .board-header { text-align:center; margin-bottom:10px; }
+  .board-header h2 { margin:0; color:var(--board-primary-dark); }
+  .board-header h2 span { font-size:0.72em; color:#888; font-style:italic;
+    font-weight:normal; display:block; margin-top:4px; }
+  .board-header p { margin:6px 0 0; color:#666; font-size:0.95em; }
+  .board-status { margin:14px 0; padding:10px 14px; border-radius:12px;
+    font-size:0.9em; line-height:1.55; border:1.5px dashed transparent; }
+  .board-status.online { background:#e7f6ec; color:#1f6d36;
+    border-color:#7ec696; }
+  .board-status.local { background:#fff9db; color:#7c5a00;
+    border-color:#f4d35e; }
+  .board-status.local em { font-style:normal; font-weight:bold; color:#b56800; }
+  .board-form { background:var(--board-bg-tint); border:2px solid var(--board-primary);
+    border-radius:16px; padding:16px; margin-bottom:16px;
+    box-shadow:0 3px 10px rgba(90,127,255,0.18); }
+  .board-form .form-row { display:flex; gap:10px; margin-bottom:10px;
+    flex-wrap:wrap; }
+  .board-form .nick-input, .board-form .tag-select {
+    flex:1; min-width:140px; padding:9px 12px; border:1.5px solid #c8d0f0;
+    border-radius:10px; font-size:0.95em; background:white; font-family:inherit; }
+  .board-form .tag-select { cursor:pointer; }
+  .board-textarea { width:100%; min-height:80px; padding:10px 12px;
+    border:1.5px solid #c8d0f0; border-radius:10px; font-size:1em;
+    resize:vertical; font-family:inherit; box-sizing:border-box; background:white; }
+  .board-textarea:focus, .board-form .nick-input:focus, .board-form .tag-select:focus {
+    outline:none; border-color:var(--board-primary); }
+  .form-foot { display:flex; justify-content:space-between; align-items:center;
+    margin-top:10px; }
+  .char-count { color:#999; font-size:0.85em; }
+  .board-post-btn { background:var(--board-primary); color:white;
+    border:none; padding:10px 22px; border-radius:22px; font-size:1em;
+    font-weight:bold; cursor:pointer; box-shadow:0 2px 6px rgba(90,127,255,0.4);
+    transition:transform 0.15s, filter 0.15s; }
+  .board-post-btn:hover { filter:brightness(1.08); transform:translateY(-1px); }
+  .board-post-btn:disabled { background:#ccc; cursor:wait; box-shadow:none; }
+  .board-filter { display:flex; flex-wrap:wrap; gap:6px; align-items:center;
+    margin-bottom:14px; }
+  .board-filter > span { font-size:0.9em; color:#666; margin-right:4px; }
+  .filter-chip { padding:6px 12px; border-radius:14px; border:1.5px solid #c8d0f0;
+    background:white; cursor:pointer; font-size:0.85em; color:#555;
+    transition:all 0.15s; font-family:inherit; }
+  .filter-chip:hover { border-color:var(--board-primary); color:var(--board-primary-dark); }
+  .filter-chip.active { background:var(--board-primary); color:white;
+    border-color:var(--board-primary); }
+  .board-list { display:flex; flex-direction:column; gap:12px; }
+  .board-list .empty { padding:40px 20px; text-align:center; color:#999;
+    background:#fafafa; border-radius:12px; border:1.5px dashed #ddd; }
+  .board-card { background:white; border:1.5px solid #d4dcf5;
+    border-radius:14px; padding:14px 16px;
+    box-shadow:0 2px 5px rgba(0,0,0,0.04); }
+  .board-card .card-head { display:flex; align-items:center; gap:8px;
+    margin-bottom:8px; flex-wrap:wrap; }
+  .board-card .nick { font-weight:bold; color:var(--board-primary-dark); font-size:0.95em; }
+  .tag-chip { background:var(--board-chip-bg); color:var(--board-chip-text);
+    padding:2px 10px; border-radius:10px; font-size:0.78em; font-weight:bold; }
+  .board-card .time { color:#999; font-size:0.82em; margin-left:auto; }
+  .board-card .card-text { color:#333; line-height:1.6; white-space:pre-wrap;
+    word-break:break-word; margin-bottom:10px; }
+  .card-actions { display:flex; gap:10px; }
+  .card-actions button { background:none; border:1.5px solid #e0e0e0;
+    padding:5px 12px; border-radius:14px; cursor:pointer; font-size:0.85em;
+    color:#666; transition:all 0.15s; font-family:inherit; }
+  .card-actions button:hover { border-color:var(--board-primary); color:var(--board-primary-dark); }
+  .card-actions .heart.liked { background:#ffebee; color:#e53935;
+    border-color:#ffc1c4; }
+  .card-actions .heart.liked:hover { cursor:default; }
+  .replies { margin-top:10px; padding-left:12px; border-left:3px solid #c8d0f0;
+    display:flex; flex-direction:column; gap:8px; }
+  .reply { background:#f5f7ff; border-radius:8px; padding:8px 12px; }
+  .reply-meta { font-size:0.82em; color:#888; margin-bottom:3px; }
+  .reply-meta b { color:var(--board-primary-dark); }
+  .reply-text { color:#444; font-size:0.93em; line-height:1.55;
+    white-space:pre-wrap; word-break:break-word; }
+  .reply-box { margin-top:10px; padding:10px; background:#f5f7ff;
+    border:1.5px dashed #c8d0f0; border-radius:10px; }
+  .reply-box .reply-nick { width:100%; padding:7px 10px; margin-bottom:6px;
+    border:1px solid #c8d0f0; border-radius:8px; font-family:inherit;
+    box-sizing:border-box; font-size:0.9em; background:white; }
+  .reply-box .reply-text-input { width:100%; min-height:60px; padding:8px 10px;
+    border:1px solid #c8d0f0; border-radius:8px; font-family:inherit;
+    box-sizing:border-box; font-size:0.9em; resize:vertical; background:white; }
+  .reply-foot { display:flex; justify-content:flex-end; gap:8px; margin-top:8px; }
+  .reply-cancel, .reply-send { padding:6px 14px; border-radius:12px;
+    border:none; cursor:pointer; font-size:0.85em; font-family:inherit; }
+  .reply-cancel { background:#eee; color:#666; }
+  .reply-send { background:var(--board-primary); color:white; font-weight:bold; }
+  @media (max-width:620px) {
+    .board-form .form-row { flex-direction:column; }
+    .board-card .time { margin-left:0; width:100%; }
+  }
+  /* ===== 頁尾 署名 & 計畫補助說明 ===== */
+  .site-footer {
+    margin-top: 48px;
+    padding: 20px 18px 24px;
+    border-top: 2px solid #cfd8ff;
+    background: #f3f6ff;
+    border-radius: 12px;
+    text-align: center;
+    color: #3a4a7a;
+    font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif;
+    line-height: 1.65;
+  }
+  .site-footer .sf-main {
+    font-size: 15px;
+    font-weight: 700;
+    color: #2a3a6a;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+  .site-footer .sf-sub-label {
+    font-size: 12px;
+    color: #5a6a9a;
+    margin: 8px 0 4px;
+  }
+  .site-footer .sf-grants {
+    font-size: 11.5px;
+    color: #4a5a8a;
+    max-width: 820px;
+    margin: 0 auto;
+  }
+  .site-footer .sf-grants p {
+    margin: 2px 0;
+  }
+  @media (max-width:620px) {
+    .site-footer .sf-main { font-size: 13px; }
+    .site-footer .sf-grants { font-size: 10.5px; }
+  }
+</style>
+<!-- Firebase SDK (compat) — only used if you fill in BOARD_FIREBASE_CONFIG below -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+<h1>🌟 My First Day at School 🌟</h1>
+<p class="subtitle">A fun interactive picture book for kids</p>
+
+<div class="mode-switcher">
+  <a class="home-btn" href="../index.html" title="回到繪本總主頁">🏠 總主頁</a>
+  <button class="mode-btn active" data-mode="story">📖 念故事</button>
+  <button class="mode-btn" data-mode="game">🎮 排序遊戲</button>
+  <button class="mode-btn" data-mode="song">🎵 主題曲</button>
+  <button class="mode-btn" data-mode="listen">👂 聽力句子卡</button>
+  <button class="mode-btn" data-mode="teacher">👩‍🏫 老師說</button>
+  <button class="mode-btn" data-mode="dialogue">👨‍👩‍👧 親子對話練習</button>
+  <button class="mode-btn" data-mode="tictactoe">🎯 單字圈圈叉</button>
+  <button class="mode-btn" data-mode="parent">📝 親子任務單</button>
+  <button class="mode-btn" data-mode="board">💬 家長留言板</button>
+</div>
+
+<!-- =============== MODE 1: STORY =============== -->
+<div class="mode-content active" id="mode-story">
+  <div class="story-container">
+    <div class="page-indicator" id="pageIndicator">Page 1 / 8</div>
+    <div class="story-image-wrap">
+      <img class="story-image" id="storyImage" src="" alt="Story page">
+    </div>
+    <div class="page-title" id="pageTitle"></div>
+    <div class="narration" id="narrationBox"></div>
+    <div class="speaker-controls" id="speakerControls"></div>
+    <div class="nav-controls">
+      <button class="nav-btn" id="prevBtn">⬅ 上一頁</button>
+      <button class="nav-btn" id="nextBtn">下一頁 ➡</button>
+    </div>
+  </div>
+</div>
+
+<!-- =============== MODE 2: GAME (Sentence Sort) =============== -->
+<div class="mode-content" id="mode-game">
+  <div class="game-container">
+    <p class="game-instruction">🧩 把單字塊拖到上方的格子，排成完整的英文句子！排對後我會唸給你聽 🎧</p>
+
+    <div class="sentence-tabs" id="sentenceTabs"></div>
+
+    <div class="sentence-zone">
+      <div class="sentence-target" id="sentenceTarget"></div>
+      <div class="sentence-bank-label">👇 從下面拖一塊到上面，或點單字聽發音</div>
+      <div class="sentence-bank" id="sentenceBank"></div>
+    </div>
+
+    <div class="game-controls">
+      <button class="game-btn shuffle" id="shuffleBtn">🔀 重新打亂</button>
+      <button class="game-btn check"   id="checkBtn">✅ 檢查答案</button>
+      <button class="game-btn reset"   id="resetBtn">➡️ 下一句</button>
+    </div>
+    <div class="game-result" id="gameResult"></div>
+  </div>
+</div>
+
+<!-- =============== MODE 3: SONG =============== -->
+<div class="mode-content" id="mode-song">
+  <div class="song-container">
+    <div class="song-header">
+      <div class="song-title">🎤 Good Morning, School 🎤</div>
+      <p style="color:#777;">一起來跟著唱吧！歌詞會隨著音樂亮起來 ✨</p>
+    </div>
+
+    <div class="audio-player">
+      <audio controls id="themeSong" preload="metadata">
+        <source src="audios/Good Morning, School.mp3" type="audio/mpeg">
+        您的瀏覽器不支援音訊播放。
+      </audio>
+      <div class="karaoke-hint">💡 點一下任一句歌詞，可以跳到那一段</div>
+    </div>
+
+    <div class="lyrics" id="lyrics"></div>
+  </div>
+</div>
+
+<!-- =============== MODE 4: LISTENING CARDS =============== -->
+<div class="mode-content" id="mode-listen">
+  <div class="listen-container">
+    <p class="game-instruction">👂 點一張卡片，聽聽看這句話怎麼唸！</p>
+    <div class="listen-grid" id="listenGrid"></div>
+  </div>
+</div>
+
+<!-- =============== MODE: TEACHER PODCAST =============== -->
+<div class="mode-content" id="mode-teacher">
+  <div class="teacher-container">
+    <div class="teacher-avatar">👩‍🏫</div>
+    <div class="teacher-title">老師說</div>
+    <div class="teacher-subtitle">聽聽老師跟爸爸媽媽分享，如何陪孩子一起走進《My First Day at School》的世界 🌟</div>
+
+    <div class="teacher-audio-box">
+      <audio controls id="teacherPodcast" preload="metadata">
+        <source src="audios/podcast.m4a" type="audio/mp4">
+        您的瀏覽器不支援音訊播放。
+      </audio>
+    </div>
+
+    <div class="teacher-note">
+      💡 <strong>建議的聆聽時機：</strong><br>
+      ・親子共讀前：先聽老師的引導，再帶著孩子翻開繪本<br>
+      ・開學前：搭配「親子對話練習」模式，提前預演上學情境<br>
+      ・洗澡、通勤、睡前的碎片時間都很適合播放
+    </div>
+  </div>
+</div>
+
+<!-- =============== MODE: PARENT-CHILD DIALOGUE =============== -->
+<div class="mode-content" id="mode-dialogue">
+  <div class="dialogue-container">
+    <p class="game-instruction" style="margin-bottom:18px;">
+      👨‍👩‍👧 跟著每一頁的情境，陪孩子玩角色扮演，把英文自然地說出口！
+    </p>
+
+    <div class="dialogue-top">
+      <div class="dialogue-thumb"><img id="dialogueImg" src="" alt="scene"></div>
+      <div class="dialogue-header">
+        <div class="dialogue-scene" id="dialogueScene"></div>
+        <div class="dialogue-title" id="dialogueTitle"></div>
+        <div class="dialogue-role" id="dialogueRole"></div>
+      </div>
+    </div>
+
+    <div class="dialogue-script" id="dialogueScript"></div>
+    <div class="dialogue-tip" id="dialogueTip"></div>
+
+    <div class="nav-controls" style="margin-top:18px;">
+      <button class="nav-btn" id="dlgPrevBtn">⬅ 上一頁</button>
+      <div style="color:#777;font-weight:bold;" id="dialogueIndicator">1 / 8</div>
+      <button class="nav-btn" id="dlgNextBtn">下一頁 ➡</button>
+    </div>
+  </div>
+</div>
+
+<!-- =============== MODE: TIC-TAC-TOE VOCABULARY =============== -->
+<div class="mode-content" id="mode-tictactoe">
+  <div class="ttt-container">
+    <p class="ttt-instruction">
+      🎯 <strong>兩人對戰：單字圈圈叉</strong><br>
+      輪流點格子：先把格子裡的英文單字唸出來，再點下去佔格子！<br>
+      連成三個（橫、直、斜）就贏了 🎉
+    </p>
+    <div class="ttt-players">
+      <div class="ttt-player p1 active" id="ttt-p1">🔴 玩家 1（O）</div>
+      <div class="ttt-player p2"        id="ttt-p2">🔵 玩家 2（X）</div>
+    </div>
+    <div class="ttt-board" id="tttBoard"></div>
+    <div class="ttt-status" id="tttStatus">點一個格子開始！</div>
+    <div class="ttt-controls">
+      <button class="ttt-btn reset"     id="tttResetBtn">🔄 新一局</button>
+      <button class="ttt-btn reshuffle" id="tttShuffleBtn">🔀 換一套單字</button>
+    </div>
+  </div>
+</div>
+
+<!-- =============== MODE: PARENT-CHILD MISSIONS =============== -->
+<div class="mode-content" id="mode-parent">
+  <div class="parent-container">
+
+    <div class="parent-intro">
+      <strong>給爸媽的話 · For parents</strong><br>
+      孩子上學的第一週，哭的往往不只是孩子 — 爸媽心裡也會打結。
+      這份任務卡不是要讓孩子「快點適應」，而是給爸媽三件具體可以做的事：
+      <strong>一個儀式、一個名字、一句心情</strong>。
+      每一個都是在告訴孩子：「你在外面的世界，不是一個人。我們中間有一條看不見的線，一直連著。」
+    </div>
+
+    <div id="missionList"></div>
+
+    <div class="dialogue-box">
+      <h3>💬 放學路上不要問的問題</h3>
+      <div class="sub">Better questions on the way home</div>
+      <table class="dialogue-table">
+        <tr>
+          <th class="bad">不要問  Don't ask</th>
+          <th class="good">改成這樣問  Ask instead</th>
+        </tr>
+        <tr>
+          <td class="bad">「今天乖不乖？」</td>
+          <td class="good">「今天有讓你笑出來的一件事嗎？」</td>
+        </tr>
+        <tr>
+          <td class="bad">「老師有罵你嗎？」</td>
+          <td class="good">「今天老師說了什麼話，你記得最清楚？」</td>
+        </tr>
+        <tr>
+          <td class="bad">「有沒有交到朋友？」</td>
+          <td class="good">「今天誰坐在你旁邊？他在做什麼？」</td>
+        </tr>
+        <tr>
+          <td class="bad">「在學校有沒有哭？」</td>
+          <td class="good">「今天你的心是什麼天氣？」</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="tracker-box">
+      <h3>🌡️ 一週分離焦慮溫度計</h3>
+      <div class="sub">Weekly separation check — 打勾就好，不用完美</div>
+      <div class="tracker-grid" id="trackerGrid"></div>
+    </div>
+
+    <div class="reflect-box">
+      <h3>📖 爸媽的一週省思</h3>
+      <div class="sub">A parent's weekly notes</div>
+      <div class="prompt">這週孩子讓我看見他勇敢的一個小瞬間 ——</div>
+      <textarea placeholder="在這裡寫下..."></textarea>
+      <div class="prompt">我這週最放不下、最想哭的一刻是 ——</div>
+      <textarea placeholder="在這裡寫下..."></textarea>
+      <div class="prompt">下週我想在早上的告別多做一件事 ——</div>
+      <textarea placeholder="在這裡寫下..."></textarea>
+    </div>
+
+  </div>
+</div>
+
+<div class="mode-content" id="mode-board">
+  <div class="board-wrap">
+    <div class="board-header">
+      <h2>💬 家長留言板 <span>Parents Share Board</span></h2>
+      <p>跟其他爸媽分享上學路上的故事、分離焦慮的卡點、或你找到的小撇步。</p>
+    </div>
+
+    <div class="board-status" id="boardStatus"></div>
+
+    <div class="board-form">
+      <div class="form-row">
+        <input id="boardNick" class="nick-input" placeholder="暱稱（空白就是匿名家長）" maxlength="20">
+        <select id="boardTag" class="tag-select"></select>
+      </div>
+      <textarea id="boardText" class="board-textarea"
+        placeholder="分享你的心得、問題、或想聽聽其他家長意見…（最多 500 字）"
+        maxlength="500"></textarea>
+      <div class="form-foot">
+        <span class="char-count" id="boardCount">0 / 500</span>
+        <button id="boardPost" class="board-post-btn">送出分享</button>
+      </div>
+    </div>
+
+    <div class="board-filter" id="boardFilter"></div>
+
+    <div id="boardList" class="board-list"></div>
+  </div>
+</div>
+
+<script>
+/* ====== DATA ======
+ * narration: 分段的旁白片段，zh = 中文敘述（給 TTS 念），en = 英文對白（也給 TTS 念成英文）
+ * trans = 英文後的中文翻譯（顯示用，TTS 會用較快速度帶過）
+ */
+const PAGES = [
+  {
+    img: 'pictures/p01.png',
+    title: 'Page 1 · 充滿希望的開始',
+    narrationAudio: 'audios/page01 .m4a',
+    narration: [
+      { zh: '太陽公公起床囉！金色的陽光照在草地上。小貓咪背起他最心愛的紅色小書包，興奮地來到幼兒園門口。他看著美麗的校園，開心地揮揮手大聲說：' },
+      { en: 'Good morning, school!', trans: '早安，學校！' }
+    ],
+    audios: [{ src: 'audios/01. Good Morning School (1).m4a', label: '🔊 1' }]
+  },
+  {
+    img: 'pictures/p02.png',
+    title: 'Page 2 · 勇敢地說再見',
+    narrationAudio: 'audios/page02.m4a',
+    narration: [
+      { zh: '到了校門口，小貓咪要跟親愛的爸爸媽媽抱抱說再見了。雖然心裡有一點點捨不得，但他知道學校裡有很多好玩的事情等著他。他勇敢地揮揮小手說：' },
+      { en: 'Goodbye, Mommy! Bye-bye, Daddy!', trans: '媽咪再見，爸爸再見！' }
+    ],
+    audios: [{ src: 'audios/02. Goodbye Mommy Goodby.m4a', label: '🔊 1' }]
+  },
+  {
+    img: 'pictures/p03.png',
+    title: 'Page 3 · 親切的問候',
+    narrationAudio: 'audios/page03.m4a',
+    narration: [
+      { zh: '走進校園，漂亮的兔子老師已經在門口微笑著等大家了。老師親切地幫小貓咪量體溫、檢查手手。小貓咪很有禮貌，主動跟老師打招呼：' },
+      { en: 'Hello, Teacher!', trans: '老師好！' }
+    ],
+    audios: [{ src: 'audios/03. Hello Teacher .m4a', label: '🔊 1' }]
+  },
+  {
+    img: 'pictures/p04.png',
+    title: 'Page 4 · 關心與回應',
+    narrationAudio: 'audios/page04.m4a',
+    narration: [
+      { zh: '老師摸摸小貓咪的頭，溫柔地問他：' },
+      { en: 'Good morning! How are you today?', trans: '早安！你今天好嗎？' },
+      { zh: '小貓咪精神飽滿地看著老師，大聲地回答：' },
+      { en: 'I am happy, thank you!', trans: '我很快樂，謝謝老師！' }
+    ],
+    audios: [
+      { src: 'audios/04-1. Good morning How are.m4a', label: '🔊 1' },
+      { src: 'audios/04-2. I am happy thank you.m4a', label: '🔊 2' }
+    ]
+  },
+  {
+    img: 'pictures/p05.png',
+    title: 'Page 5 · 自信的小腳步',
+    narrationAudio: 'audios/page05.m4a',
+    narration: [
+      { zh: '小貓咪走在明亮的走廊上，他覺得全身都充滿了力量！他開心地蹦蹦跳跳，對著牆壁上的畫還有鏡子裡的自己說：' },
+      { en: 'I am great! I am happy.', trans: '我好棒！我很快樂。' }
+    ],
+    audios: [{ src: 'audios/05. I am great I am happ.m4a', label: '🔊 1' }]
+  },
+  {
+    img: 'pictures/p06.png',
+    title: 'Page 6 · 遇見好朋友',
+    narrationAudio: 'audios/page06.m4a',
+    narration: [
+      { zh: '走進教室，哇！已經有很多好朋友在玩積木了。有小狗、小熊還有小羊。小貓咪走過去，開心地跟大家招招手說：' },
+      { en: 'Hi, friends!', trans: '嗨，朋友們！' },
+      { zh: '大家也都開心地歡迎他加入。' }
+    ],
+    audios: [{ src: 'audios/06. Hi friends .m4a', label: '🔊 1' }]
+  },
+  {
+    img: 'pictures/p07.png',
+    title: 'Page 7 · 愛護我的學校',
+    narrationAudio: 'audios/page07.m4a',
+    narration: [
+      { zh: '開始活動前，要把東西收整齊喔。小貓咪把書包端正地掛在自己的小格子上，他看著溫馨的教室，心裡暖洋洋地想著：' },
+      { en: 'I love my school.', trans: '我愛我的學校。' }
+    ],
+    audios: [{ src: 'audios/07. I love my school .m4a', label: '🔊 1' }]
+  },
+  {
+    img: 'pictures/p08.png',
+    title: 'Page 8 · 大家一起玩',
+    narrationAudio: 'audios/page08.m4a',
+    narration: [
+      { zh: '最快樂的戶外活動時間到了！操場上有滑梯和鞦韆。小貓咪和朋友們手牽手，開心地大喊：' },
+      { en: "Let's play together!", trans: '讓我們一起玩吧！' },
+      { zh: '幼兒園的一天，真是太精彩了！' }
+    ],
+    audios: [{ src: 'audios/08.let s play together.m4a', label: '🔊 1' }]
+  }
+];
+
+/* Karaoke lyrics with estimated timestamps (seconds) for a ~50s song.
+   Clickable to seek — users can observe actual timing and adjust numbers below if needed. */
+const LYRICS = [
+  { verse: 'Verse 1 (Page 1–2)', action: '👏 拍手兩次', lines: [
+      { t: 2.0,  text: 'Good morning, school!' },
+      { t: 4.0,  text: 'Good morning, school!' },
+      { t: 6.0,  text: 'Goodbye, Mommy.' },
+      { t: 8.0,  text: 'Goodbye, Daddy.' },
+      { t: 10.0, text: 'I am at school!' }
+  ]},
+  { verse: 'Verse 2 (Page 3–4)', action: '👋 揮揮手', lines: [
+      { t: 13.0, text: 'Hello, teacher!' },
+      { t: 15.0, text: 'Hello, teacher!' },
+      { t: 17.0, text: '"How are you?"' },
+      { t: 19.0, text: '"How are you?"' },
+      { t: 21.0, text: 'Hello, teacher!' }
+  ]},
+  { verse: 'Verse 3 (Page 5)', action: '👍 比大拇指', lines: [
+      { t: 24.0, text: 'I am great!' },
+      { t: 26.0, text: 'I am happy!' },
+      { t: 28.0, text: 'I am great!' },
+      { t: 30.0, text: 'I am happy!' },
+      { t: 32.0, text: 'I feel good!' }
+  ]},
+  { verse: 'Verse 4 (Page 6–8)', action: '', lines: [
+      { t: 35.0, text: 'Hi, my friends!' },
+      { t: 37.0, text: 'Hi, my friends!' },
+      { t: 39.0, text: 'I love school.' },
+      { t: 41.5, text: 'Play together!' },
+      { t: 44.0, text: 'We love school!' }
+  ]}
+];
+
+/* Listening cards — flatten pages into one card per audio */
+const LISTEN_CARDS = [];
+PAGES.forEach((p, pi) => {
+  p.audios.forEach((a, ai) => {
+    const label = p.audios.length > 1
+      ? `Page ${pi + 1}-${ai + 1}`
+      : `Page ${pi + 1}`;
+    LISTEN_CARDS.push({ label, img: p.img, src: a.src });
+  });
+});
+
+/* ====== MODE SWITCHER ====== */
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.mode-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('mode-' + btn.dataset.mode).classList.add('active');
+    stopAllAudio();
+  });
+});
+
+function stopAllAudio() {
+  if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; currentAudio = null; }
+  document.querySelectorAll('.speaker-btn, .play-rec-btn').forEach(b => b.classList.remove('playing'));
+  document.querySelectorAll('.listen-card').forEach(c => c.classList.remove('playing', 'pop-in'));
+  const themeSong = document.getElementById('themeSong');
+  if (themeSong) themeSong.pause();
+  const teacherPod = document.getElementById('teacherPodcast');
+  if (teacherPod) teacherPod.pause();
+}
+
+/* ====== MODE 1: STORY ====== */
+let currentPage = 0;
+let currentAudio = null;
+
+/* ====== 🎤 跟讀錄音狀態 ====== */
+const recordings = {};       // key → {blob, url}
+let activeRecorder = null;
+let activeRecKey = null;
+let activeRecChunks = [];
+let micStream = null;
+
+async function getMicStream() {
+  if (micStream) return micStream;
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    throw new Error('瀏覽器不支援錄音功能');
+  }
+  micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  return micStream;
+}
+
+async function toggleRecord(key, recBtn, playRecBtn) {
+  if (activeRecorder && activeRecKey === key) {
+    activeRecorder.stop();
+    return;
+  }
+  if (activeRecorder) {
+    activeRecorder.stop();
+    await new Promise(r => setTimeout(r, 150));
+  }
+  stopAllAudio();
+  try {
+    const stream = await getMicStream();
+    activeRecChunks = [];
+    activeRecorder = new MediaRecorder(stream);
+    activeRecKey = key;
+    activeRecorder.ondataavailable = e => { if (e.data.size > 0) activeRecChunks.push(e.data); };
+    activeRecorder.onstop = () => {
+      const mime = activeRecorder ? (activeRecorder.mimeType || 'audio/webm') : 'audio/webm';
+      const blob = new Blob(activeRecChunks, { type: mime });
+      const url = URL.createObjectURL(blob);
+      if (recordings[key] && recordings[key].url) URL.revokeObjectURL(recordings[key].url);
+      recordings[key] = { blob, url };
+      if (recBtn) {
+        recBtn.classList.remove('recording');
+        recBtn.innerHTML = '🎤';
+        recBtn.title = '重錄';
+      }
+      if (playRecBtn) {
+        playRecBtn.disabled = false;
+        playRecBtn.classList.add('has-rec');
+      }
+      activeRecorder = null;
+      activeRecKey = null;
+    };
+    activeRecorder.start();
+    recBtn.classList.add('recording');
+    recBtn.innerHTML = '⏹';
+    recBtn.title = '點擊結束錄音';
+  } catch (err) {
+    alert('無法使用麥克風：' + (err.message || err) + '\n請確認瀏覽器已授權麥克風權限（右上角鎖頭）再試。');
+    activeRecorder = null;
+    activeRecKey = null;
+    recBtn.classList.remove('recording');
+    recBtn.innerHTML = '🎤';
+  }
+}
+
+function playRecording(key, playRecBtn) {
+  const r = recordings[key];
+  if (!r) return;
+  stopAllAudio();
+  const a = new Audio(r.url);
+  currentAudio = a;
+  playRecBtn.classList.add('playing');
+  a.addEventListener('ended', () => {
+    playRecBtn.classList.remove('playing');
+    currentAudio = null;
+  });
+  a.play().catch(err => {
+    playRecBtn.classList.remove('playing');
+    console.error('Recording playback failed', err);
+  });
+}
+
+function renderPage() {
+  const page = PAGES[currentPage];
+  document.getElementById('pageIndicator').textContent = `Page ${currentPage + 1} / ${PAGES.length}`;
+  document.getElementById('storyImage').src = page.img;
+  document.getElementById('pageTitle').textContent = page.title || '';
+
+  // Build narration HTML
+  const narrBox = document.getElementById('narrationBox');
+  narrBox.innerHTML = '';
+  (page.narration || []).forEach(seg => {
+    if (seg.zh) {
+      const span = document.createElement('span');
+      span.textContent = seg.zh;
+      narrBox.appendChild(span);
+    }
+    if (seg.en) {
+      narrBox.appendChild(document.createTextNode('「'));
+      const en = document.createElement('span');
+      en.className = 'en';
+      en.textContent = seg.en;
+      narrBox.appendChild(en);
+      narrBox.appendChild(document.createTextNode('」'));
+      if (seg.trans) {
+        const tr = document.createElement('span');
+        tr.className = 'zh-trans';
+        tr.textContent = '（' + seg.trans + '）';
+        narrBox.appendChild(tr);
+      }
+    }
+  });
+
+  // Controls: primary "念旁白" + English audio buttons
+  const controls = document.getElementById('speakerControls');
+  controls.innerHTML = '';
+
+  // Primary narration button (plays local narration audio)
+  if (page.narrationAudio) {
+    const narrateBtn = document.createElement('button');
+    narrateBtn.className = 'speaker-btn primary-narrate';
+    narrateBtn.innerHTML = '🎤 <span>念旁白</span>';
+    narrateBtn.title = '播放旁白';
+    narrateBtn.addEventListener('click', () => playAudio(page.narrationAudio, narrateBtn));
+    controls.appendChild(narrateBtn);
+  }
+
+  // English audio buttons
+  if (page.audios && page.audios.length > 0) {
+    const label = document.createElement('span');
+    label.className = 'english-audio-label';
+    label.textContent = '英文對白：';
+    controls.appendChild(label);
+
+    page.audios.forEach((a, i) => {
+      const wrap = document.createElement('span');
+      wrap.className = 'audio-group';
+
+      const btn = document.createElement('button');
+      btn.className = 'speaker-btn' + (i > 0 ? ' secondary' : '');
+      btn.innerHTML = a.label;
+      btn.title = '播放英文對白';
+      btn.addEventListener('click', () => playAudio(a.src, btn));
+      wrap.appendChild(btn);
+
+      const key = `p${currentPage}_a${i}`;
+
+      const recBtn = document.createElement('button');
+      recBtn.className = 'rec-btn';
+      recBtn.innerHTML = '🎤';
+      recBtn.title = recordings[key] ? '重錄' : '跟讀錄音';
+
+      const playRecBtn = document.createElement('button');
+      playRecBtn.className = 'play-rec-btn' + (recordings[key] ? ' has-rec' : '');
+      playRecBtn.innerHTML = '▶️';
+      playRecBtn.title = '播放你的錄音';
+      playRecBtn.disabled = !recordings[key];
+
+      recBtn.addEventListener('click', () => toggleRecord(key, recBtn, playRecBtn));
+      playRecBtn.addEventListener('click', () => playRecording(key, playRecBtn));
+
+      wrap.appendChild(recBtn);
+      wrap.appendChild(playRecBtn);
+      controls.appendChild(wrap);
+    });
+
+    const hint = document.createElement('div');
+    hint.className = 'rec-hint';
+    hint.textContent = '🎤 跟著念 → 按一下錄音、再按一下停止；▶️ 播放你的錄音';
+    controls.appendChild(hint);
+  }
+
+  document.getElementById('prevBtn').disabled = currentPage === 0;
+  document.getElementById('nextBtn').disabled = currentPage === PAGES.length - 1;
+}
+
+
+function playAudio(src, btn) {
+  stopAllAudio();
+  const audio = new Audio(src);
+  currentAudio = audio;
+  btn.classList.add('playing');
+
+  audio.play().catch(err => {
+    btn.classList.remove('playing');
+    console.error('Audio play failed:', err);
+    alert('音檔無法播放：' + src);
+  });
+
+  audio.addEventListener('ended', () => {
+    btn.classList.remove('playing');
+    currentAudio = null;
+  });
+}
+
+document.getElementById('prevBtn').addEventListener('click', () => {
+  if (currentPage > 0) { stopAllAudio(); currentPage--; renderPage(); }
+});
+document.getElementById('nextBtn').addEventListener('click', () => {
+  if (currentPage < PAGES.length - 1) { stopAllAudio(); currentPage++; renderPage(); }
+});
+
+renderPage();
+
+/* ====== MODE 2: SENTENCE SORT ====== */
+const SENTENCES = [
+  {
+    "id": "s1",
+    "text": "Good morning, school!",
+    "tiles": [
+      "Good",
+      "morning,",
+      "school!"
+    ]
+  },
+  {
+    "id": "s2",
+    "text": "Hello, Teacher!",
+    "tiles": [
+      "Hello,",
+      "Teacher!"
+    ]
+  },
+  {
+    "id": "s3",
+    "text": "I am happy.",
+    "tiles": [
+      "I",
+      "am",
+      "happy."
+    ]
+  },
+  {
+    "id": "s4",
+    "text": "I love my school.",
+    "tiles": [
+      "I",
+      "love",
+      "my",
+      "school."
+    ]
+  },
+  {
+    "id": "s5",
+    "text": "Let's play together!",
+    "tiles": [
+      "Let's",
+      "play",
+      "together!"
+    ]
+  }
+];
+
+let sIdx = 0;             // current sentence index
+let bankTiles = [];       // [{word, oIdx}] in bank
+let slotTiles = [];       // [{word, oIdx} | null] in slots
+
+/* ---- Audio: single voice for words AND sentences ----
+   Primary: pre-generated edge-tts Microsoft Ana MP3s under audios/sentences/.
+   Fallback: SpeechSynthesis with a locked voice (chosen once, kept stable). */
+let _cachedVoices = [];
+let _lockedVoice = null;
+function _loadVoices() {
+  if (!('speechSynthesis' in window)) return;
+  _cachedVoices = speechSynthesis.getVoices() || [];
+  _lockedVoice = null; // reselect with new list
+  _pickVoice();
+}
+function _pickVoice() {
+  if (_lockedVoice) return _lockedVoice;
+  const voices = _cachedVoices;
+  if (!voices.length) return null;
+  // Order matches what the user will hear after running the audio gen script.
+  const order = [
+    /^Microsoft Ana/i,
+    /\bAna\b/i,
+    /Samantha/i,
+    /Karen/i,
+    /Allison/i,
+    /Tessa/i,
+    /Nicky/i,
+    /Aria/i,
+    /Jenny/i,
+    /^Google.*US English/i,
+    /female/i,
+  ];
+  for (const re of order) {
+    const v = voices.find(v => re.test(v.name) && /en-/i.test(v.lang));
+    if (v) { _lockedVoice = v; return v; }
+  }
+  _lockedVoice = voices.find(v => /en-/i.test(v.lang)) || null;
+  return _lockedVoice;
+}
+_loadVoices();
+if ('speechSynthesis' in window) {
+  speechSynthesis.onvoiceschanged = _loadVoices;
+}
+
+function fallbackSpeak(text) {
+  if (!('speechSynthesis' in window) || !text) return;
+  try { window.speechSynthesis.cancel(); } catch (e) {}
+  setTimeout(() => {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'en-US';
+    u.rate = 0.95;
+    u.pitch = 1.9;
+    const v = _pickVoice();
+    if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  }, 80);
+}
+
+function _playMp3(src, fallbackText) {
+  const a = new Audio(src);
+  let settled = false;
+  const fall = () => {
+    if (settled) return;
+    settled = true;
+    fallbackSpeak(fallbackText);
+  };
+  a.addEventListener('error', fall);
+  a.addEventListener('playing', () => { settled = true; });
+  a.play().catch(fall);
+}
+
+function speakSentence(s) {
+  _playMp3('audios/sentences/' + s.id + '.mp3', s.text);
+}
+
+function speakTile(s, oIdx, word) {
+  // Strip trailing punctuation for fallback voice
+  const spoken = word.replace(/[.,!?]+$/, '');
+  _playMp3('audios/sentences/' + s.id + '_' + oIdx + '.mp3', spoken);
+}
+
+/* ---- Game logic ---- */
+function shuffleArr(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  // make sure shuffled order isn't already correct (for >=2 tiles)
+  if (a.length >= 2 && a.every((v, i) => v.oIdx === i)) {
+    [a[0], a[1]] = [a[1], a[0]];
+  }
+  return a;
+}
+
+function loadSentence(idx) {
+  sIdx = (idx + SENTENCES.length) % SENTENCES.length;
+  const s = SENTENCES[sIdx];
+  slotTiles = s.tiles.map(_ => null);
+  bankTiles = shuffleArr(s.tiles.map((w, i) => ({ word: w, oIdx: i })));
+  const r = document.getElementById('gameResult');
+  r.textContent = '';
+  r.className = 'game-result';
+  renderAll();
+}
+
+function renderAll() { renderTabs(); renderTarget(); renderBank(); }
+
+function renderTabs() {
+  const tabs = document.getElementById('sentenceTabs');
+  tabs.innerHTML = '';
+  SENTENCES.forEach((s, i) => {
+    const b = document.createElement('button');
+    b.className = 'sentence-tab' + (i === sIdx ? ' active' : '');
+    b.textContent = '\u7b2c ' + (i+1) + ' \u53e5';
+    b.addEventListener('click', () => loadSentence(i));
+    tabs.appendChild(b);
+  });
+}
+
+function mkTile(tile, inSlot) {
+  const t = document.createElement('div');
+  t.className = 'sentence-tile' + (inSlot ? ' in-slot' : '');
+  t.draggable = true;
+  t.textContent = tile.word;
+  t.dataset.oIdx = tile.oIdx;
+  t.addEventListener('dragstart', e => {
+    e.dataTransfer.setData('text/plain', String(tile.oIdx));
+    e.dataTransfer.effectAllowed = 'move';
+    t.classList.add('dragging');
+  });
+  t.addEventListener('dragend', () => t.classList.remove('dragging'));
+
+  // Touch support (mobile drag-drop) + tap-to-pronounce
+  let touchClone = null, touchMoved = false, touchStart = null;
+  t.addEventListener('touchstart', e => {
+    if (e.touches.length !== 1) return;
+    e.preventDefault();
+    touchMoved = false;
+    touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    touchClone = t.cloneNode(true);
+    touchClone.style.position = 'fixed';
+    touchClone.style.pointerEvents = 'none';
+    touchClone.style.opacity = '0.85';
+    touchClone.style.zIndex = '9999';
+    moveTouchClone(e.touches[0]);
+    document.body.appendChild(touchClone);
+    t.classList.add('dragging');
+  }, { passive: false });
+  t.addEventListener('touchmove', e => {
+    if (!touchClone) return;
+    e.preventDefault();
+    const dx = e.touches[0].clientX - touchStart.x;
+    const dy = e.touches[0].clientY - touchStart.y;
+    if (Math.hypot(dx, dy) > 8) touchMoved = true;
+    moveTouchClone(e.touches[0]);
+    document.querySelectorAll('.sentence-slot.over, .sentence-bank.over')
+      .forEach(el => el.classList.remove('over'));
+    const tx = e.touches[0].clientX, ty = e.touches[0].clientY;
+    const elem = document.elementFromPoint(tx, ty);
+    const slot = elem && elem.closest('.sentence-slot');
+    const bank = elem && elem.closest('#sentenceBank');
+    if (slot) slot.classList.add('over');
+    else if (bank) bank.classList.add('over');
+  }, { passive: false });
+  t.addEventListener('touchend', e => {
+    if (!touchClone) return;
+    const tc = e.changedTouches[0];
+    const elem = document.elementFromPoint(tc.clientX, tc.clientY);
+    const slot = elem && elem.closest('.sentence-slot');
+    const bank = elem && elem.closest('#sentenceBank');
+    document.body.removeChild(touchClone);
+    touchClone = null;
+    t.classList.remove('dragging');
+    document.querySelectorAll('.sentence-slot.over, .sentence-bank.over')
+      .forEach(el => el.classList.remove('over'));
+    if (touchMoved) {
+      if (slot) handleDrop(tile.oIdx, parseInt(slot.dataset.slotIdx));
+      else if (bank) handleDropToBank(tile.oIdx);
+    } else {
+      // Tap (no drag) → pronounce this tile
+      speakTile(SENTENCES[sIdx], tile.oIdx, tile.word);
+    }
+  });
+  function moveTouchClone(touch) {
+    const r = t.getBoundingClientRect();
+    touchClone.style.left = (touch.clientX - r.width/2) + 'px';
+    touchClone.style.top  = (touch.clientY - r.height/2) + 'px';
+  }
+
+  // Click-to-pronounce on desktop
+  t.addEventListener('click', () => {
+    speakTile(SENTENCES[sIdx], tile.oIdx, tile.word);
+  });
+  return t;
+}
+
+function renderTarget() {
+  const target = document.getElementById('sentenceTarget');
+  target.innerHTML = '';
+  slotTiles.forEach((tile, i) => {
+    const slot = document.createElement('div');
+    slot.className = 'sentence-slot';
+    slot.dataset.slotIdx = i;
+    if (tile) slot.appendChild(mkTile(tile, true));
+    addDropHandlers(slot, true);
+    target.appendChild(slot);
+  });
+}
+
+function renderBank() {
+  const bank = document.getElementById('sentenceBank');
+  bank.innerHTML = '';
+  bankTiles.forEach(tile => bank.appendChild(mkTile(tile, false)));
+  addDropHandlers(bank, false);
+}
+
+function addDropHandlers(el, isSlot) {
+  el.addEventListener('dragover', e => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    el.classList.add('over');
+  });
+  el.addEventListener('dragleave', () => el.classList.remove('over'));
+  el.addEventListener('drop', e => {
+    e.preventDefault();
+    el.classList.remove('over');
+    const raw = e.dataTransfer.getData('text/plain');
+    if (raw === '') return;
+    const oIdx = parseInt(raw, 10);
+    if (Number.isNaN(oIdx)) return;
+    if (isSlot) handleDrop(oIdx, parseInt(el.dataset.slotIdx));
+    else handleDropToBank(oIdx);
+  });
+}
+
+function _findTile(oIdx) {
+  const fromBank = bankTiles.find(t => t.oIdx === oIdx);
+  if (fromBank) return fromBank;
+  for (const s of slotTiles) if (s && s.oIdx === oIdx) return s;
+  return null;
+}
+function _removeTile(oIdx) {
+  const bi = bankTiles.findIndex(t => t.oIdx === oIdx);
+  if (bi >= 0) { bankTiles.splice(bi, 1); return; }
+  const si = slotTiles.findIndex(t => t && t.oIdx === oIdx);
+  if (si >= 0) slotTiles[si] = null;
+}
+
+function handleDrop(oIdx, slotIdx) {
+  const tile = _findTile(oIdx);
+  if (!tile) return;
+  _removeTile(oIdx);
+  if (slotTiles[slotIdx]) bankTiles.push(slotTiles[slotIdx]);
+  slotTiles[slotIdx] = tile;
+  renderAll();
+}
+
+function handleDropToBank(oIdx) {
+  const tile = _findTile(oIdx);
+  if (!tile) return;
+  _removeTile(oIdx);
+  if (!bankTiles.some(t => t.oIdx === oIdx)) bankTiles.push(tile);
+  renderAll();
+}
+
+document.getElementById('shuffleBtn').addEventListener('click', () => loadSentence(sIdx));
+document.getElementById('resetBtn').addEventListener('click', () => loadSentence(sIdx + 1));
+document.getElementById('checkBtn').addEventListener('click', () => {
+  const s = SENTENCES[sIdx];
+  const allFilled = slotTiles.every(t => t);
+  const slots = document.querySelectorAll('#sentenceTarget .sentence-slot');
+  slots.forEach((slot, i) => {
+    slot.classList.remove('correct', 'incorrect');
+    if (slotTiles[i] && slotTiles[i].oIdx === i) slot.classList.add('correct');
+    else slot.classList.add('incorrect');
+  });
+  const r = document.getElementById('gameResult');
+  if (!allFilled) {
+    r.textContent = '\ud83e\udd14 \u9084\u6c92\u6392\u5b8c\u5594\uff0c\u628a\u55ae\u5b57\u90fd\u62d6\u4e0a\u53bb\u5427\uff01';
+    r.className = 'game-result result-fail';
+    return;
+  }
+  const correct = slotTiles.every((t, i) => t && t.oIdx === i);
+  if (correct) {
+    r.textContent = '\ud83c\udf89 \u592a\u68d2\u4e86\uff01\u300c' + s.text + '\u300d';
+    r.className = 'game-result result-success';
+    speakSentence(s);
+  } else {
+    r.textContent = '\ud83d\udcaa \u9806\u5e8f\u9084\u4e0d\u592a\u5c0d\uff0c\u518d\u8a66\u4e00\u6b21\uff01';
+    r.className = 'game-result result-fail';
+  }
+});
+
+loadSentence(0);
+
+/* ====== MODE 3: KARAOKE LYRICS ====== */
+const lyricsEl = document.getElementById('lyrics');
+const themeSong = document.getElementById('themeSong');
+
+// Flatten lyrics with verse refs
+const flatLines = [];
+LYRICS.forEach((verse, vIdx) => {
+  verse.lines.forEach((line, lIdx) => {
+    flatLines.push({ ...line, vIdx, lIdx });
+  });
+});
+
+function renderLyrics() {
+  lyricsEl.innerHTML = '';
+  LYRICS.forEach((v, vIdx) => {
+    const verseDiv = document.createElement('div');
+    verseDiv.className = 'verse';
+    verseDiv.dataset.vIdx = vIdx;
+
+    const title = document.createElement('div');
+    title.className = 'verse-title';
+    title.textContent = '🎵 ' + v.verse;
+    verseDiv.appendChild(title);
+
+    v.lines.forEach((line, lIdx) => {
+      const lineDiv = document.createElement('div');
+      lineDiv.className = 'verse-line';
+      lineDiv.textContent = line.text;
+      lineDiv.dataset.vIdx = vIdx;
+      lineDiv.dataset.lIdx = lIdx;
+      lineDiv.dataset.t = line.t;
+      lineDiv.addEventListener('click', () => {
+        themeSong.currentTime = line.t;
+        themeSong.play();
+      });
+      verseDiv.appendChild(lineDiv);
+    });
+
+    if (v.action) {
+      const act = document.createElement('div');
+      act.className = 'verse-action';
+      act.textContent = v.action;
+      verseDiv.appendChild(act);
+    }
+
+    lyricsEl.appendChild(verseDiv);
+  });
+}
+
+renderLyrics();
+
+// Lyrics are displayed statically — no auto-highlight / auto-scroll while the song plays.
+// (Clicking a line still seeks the audio to that timestamp; see renderLyrics.)/* ====== MODE 4: LISTENING CARDS ====== */
+const listenGrid = document.getElementById('listenGrid');
+
+function renderListenCards() {
+  listenGrid.innerHTML = '';
+  LISTEN_CARDS.forEach((card, idx) => {
+    const el = document.createElement('div');
+    el.className = 'listen-card';
+    el.dataset.idx = idx;
+    el.innerHTML = `
+      <img src="${card.img}" alt="${card.label}">
+      <div class="listen-card-label">${card.label}</div>
+      <div class="listen-card-speaker">🔊</div>
+    `;
+    el.addEventListener('click', () => playListenCard(el, card));
+    listenGrid.appendChild(el);
+  });
+}
+
+function playListenCard(el, card) {
+  stopAllAudio();
+  document.querySelectorAll('.listen-card').forEach(c => c.classList.remove('playing', 'pop-in'));
+  el.classList.add('playing', 'pop-in');
+
+  const audio = new Audio(card.src);
+  currentAudio = audio;
+
+  audio.play().catch(err => {
+    el.classList.remove('playing', 'pop-in');
+    console.error('Audio play failed:', err);
+    alert('音檔無法播放：' + card.src);
+  });
+
+  audio.addEventListener('ended', () => {
+    el.classList.remove('playing', 'pop-in');
+    currentAudio = null;
+  });
+}
+
+renderListenCards();
+
+/* ====== MODE: PARENT-CHILD DIALOGUE ====== */
+const DIALOGUES = [
+  {
+    img: 'pictures/p01.png',
+    title: 'Page 1 · 跟學校說早安',
+    scene: '情境一：出門上學囉！',
+    role: '👉 爸爸／媽媽扮演「充滿活力的導覽員」，帶孩子走到門口一起跟學校打招呼。',
+    script: [
+      { speaker: 'parent', zh: '寶貝你看，金黃色的太陽出來囉！我們到學校了，像小貓咪一樣跟學校打招呼吧！' },
+      { speaker: 'parent', zh: '爸比／媽咪先示範一次：', en: 'Good morning, school!' },
+      { speaker: 'child',  zh: '（換你大聲跟學校說～）', en: 'Good morning, school!' },
+      { speaker: 'parent', zh: '哇～你說得好有精神！學校一定很開心聽到你的聲音！' }
+    ],
+    tip: '<strong>小建議：</strong>出門時、走到幼兒園門口時都可以重複這個儀式，讓「上學」變成一件讓人期待的事。'
+  },
+  {
+    img: 'pictures/p02.png',
+    title: 'Page 2 · 勇敢說再見',
+    scene: '情境二：跟爸爸媽媽道別',
+    role: '👉 爸爸／媽媽扮演「要上班／去辦事的自己」，引導孩子主動揮揮手、開心道別。',
+    script: [
+      { speaker: 'parent', zh: '寶貝，爸比要去上班了，媽咪要去買菜囉～' },
+      { speaker: 'parent', zh: '我們來跟對方用英文說再見：', en: 'Goodbye, Mommy! Bye-bye, Daddy!' },
+      { speaker: 'child',  zh: '（揮揮手，用力說～）', en: 'Goodbye, Mommy! Bye-bye, Daddy!' },
+      { speaker: 'parent', zh: '掰掰！放學我們會來接你喔～', en: 'Have a great day!' }
+    ],
+    tip: '<strong>小建議：</strong>給一個「抱抱 + 飛吻 + 揮手」的固定告別儀式，讓孩子感覺有安全感，不拖延、不哭鬧。'
+  },
+  {
+    img: 'pictures/p03.png',
+    title: 'Page 3 · 跟老師打招呼',
+    scene: '情境三：走進教室',
+    role: '👉 爸爸／媽媽扮演「兔子老師」，可以戴個兔子耳朵或捏著嗓子變聲，增加趣味！',
+    script: [
+      { speaker: 'parent', zh: '（扮演老師）早安呀小朋友！', en: 'Good morning!' },
+      { speaker: 'child',  zh: '（禮貌地看著老師）', en: 'Hello, Teacher!' },
+      { speaker: 'parent', zh: '（扮演老師）哇～今天也來上學了，真棒！' },
+      { speaker: 'parent', zh: '換你當老師，我來當小朋友，你跟我說「Good morning!」我要怎麼回答呢？' }
+    ],
+    tip: '<strong>小建議：</strong>角色互換練習很重要！讓孩子也當一次「老師」，他會更有自信表達。提醒練習打招呼時要看著對方的眼睛。'
+  },
+  {
+    img: 'pictures/p04.png',
+    title: 'Page 4 · 我今天很快樂',
+    scene: '情境四：關心彼此的心情',
+    role: '👉 爸爸／媽媽扮演「老師」問候，再示範如何回答自己的感受。',
+    script: [
+      { speaker: 'parent', zh: '（扮演老師摸摸頭）', en: 'Good morning! How are you today?' },
+      { speaker: 'child',  zh: '（開心地回答）', en: 'I am happy, thank you!' },
+      { speaker: 'parent', zh: '那如果今天有點累呢？可以說：', en: 'I am tired.' },
+      { speaker: 'parent', zh: '如果肚子餓餓呢？試試看：', en: 'I am hungry.' },
+      { speaker: 'child',  zh: '（用不同的表情，說出自己現在的感覺）' }
+    ],
+    tip: '<strong>小建議：</strong>多練習幾個情緒單字（happy / tired / sad / excited / hungry），幫助孩子認識並表達自己的心情，而不是只會哭鬧。'
+  },
+  {
+    img: 'pictures/p05.png',
+    title: 'Page 5 · 我好棒！',
+    scene: '情境五：建立自信的小小魔法',
+    role: '👉 爸爸／媽媽陪孩子對著鏡子一起喊，幫孩子「充電」！',
+    script: [
+      { speaker: 'parent', zh: '來～我們一起站在鏡子前，深呼吸，準備好了嗎？' },
+      { speaker: 'parent', zh: '（比大拇指）', en: 'I am great!' },
+      { speaker: 'child',  zh: '（大聲跟著說）', en: 'I am great!' },
+      { speaker: 'parent', zh: '（開心地跳一下）', en: 'I am happy!' },
+      { speaker: 'child',  zh: '（跳著說～）', en: 'I am happy!' }
+    ],
+    tip: '<strong>小建議：</strong>讓這句話變成每天早上出門前的小儀式，用身體動作配合聲音，持續幾週後孩子會變得更有自信！'
+  },
+  {
+    img: 'pictures/p06.png',
+    title: 'Page 6 · 認識新朋友',
+    scene: '情境六：打招呼交朋友',
+    role: '👉 爸爸／媽媽扮演「新同學」（也可以用玩偶或娃娃當朋友），練習主動打招呼。',
+    script: [
+      { speaker: 'parent', zh: '（拿起一隻小熊）嗨！我是小熊，', en: 'Hi!' },
+      { speaker: 'child',  zh: '（揮手、微笑）', en: 'Hi, friends!' },
+      { speaker: 'parent', zh: '（再拿一隻小狗）我是小狗，你叫什麼名字呢？', en: 'What is your name?' },
+      { speaker: 'child',  zh: '（介紹自己）', en: 'My name is ____.' }
+    ],
+    tip: '<strong>小建議：</strong>孩子一開始可能會害羞，可以先用玩偶練習，熟悉後再帶到公園、親子館等真實情境。'
+  },
+  {
+    img: 'pictures/p07.png',
+    title: 'Page 7 · 我愛我的學校',
+    scene: '情境七：把東西收整齊',
+    role: '👉 爸爸／媽媽扮演「小夥伴」，一起示範把書包、外套、水壺放回定位。',
+    script: [
+      { speaker: 'parent', zh: '寶貝，書包要掛在哪裡呢？我們一起找找它的家～' },
+      { speaker: 'child',  zh: '（把書包掛好）' },
+      { speaker: 'parent', zh: '每個東西都有自己的家，放好了之後你有什麼感覺？' },
+      { speaker: 'child',  zh: '（看著整齊的教室，開心地說）', en: 'I love my school.' }
+    ],
+    tip: '<strong>小建議：</strong>在家可以延伸為「玩具的家在哪裡？」「鞋子的家在哪裡？」，讓收拾變成有趣的配對遊戲。'
+  },
+  {
+    img: 'pictures/p08.png',
+    title: 'Page 8 · 一起玩最開心',
+    scene: '情境八：邀請朋友一起玩',
+    role: '👉 爸爸／媽媽扮演「一起玩的好朋友」，手牽手一起做個小活動。',
+    script: [
+      { speaker: 'parent', zh: '（伸出手）要不要一起玩呢？', en: "Let's play together!" },
+      { speaker: 'child',  zh: '（開心地牽手）', en: "Yes! Let's play together!" },
+      { speaker: 'parent', zh: '我們來玩什麼呢？轉圈圈？唱歌？還是跳舞？' },
+      { speaker: 'child',  zh: '（挑一個活動，一起玩起來～）' }
+    ],
+    tip: '<strong>小建議：</strong>真的牽手做個 30 秒的小活動（轉圈、拍手歌、簡單舞步），讓「Let\'s play together」不只是一句話，而是一段快樂的親子記憶。'
+  }
+];
+
+let dialogueIdx = 0;
+
+function renderDialogue() {
+  const d = DIALOGUES[dialogueIdx];
+  document.getElementById('dialogueImg').src = d.img;
+  document.getElementById('dialogueTitle').textContent = d.title;
+  document.getElementById('dialogueScene').textContent = d.scene;
+  document.getElementById('dialogueRole').innerHTML = d.role;
+  document.getElementById('dialogueIndicator').textContent = `${dialogueIdx + 1} / ${DIALOGUES.length}`;
+
+  const scriptBox = document.getElementById('dialogueScript');
+  scriptBox.innerHTML = '';
+  d.script.forEach(line => {
+    const el = document.createElement('div');
+    el.className = 'dialogue-line ' + line.speaker;
+    const avatar = line.speaker === 'parent' ? '👨‍👩‍👧' : '🧒';
+    const name = line.speaker === 'parent' ? '爸爸 / 媽媽' : '孩子';
+    let body = `<div class="dialogue-speaker">${name}</div>`;
+    if (line.zh) body += `<div class="dialogue-zh">${line.zh}</div>`;
+    if (line.en) body += `<div class="dialogue-en">${line.en}</div>`;
+    el.innerHTML = `<div class="dialogue-avatar">${avatar}</div><div class="dialogue-body">${body}</div>`;
+    scriptBox.appendChild(el);
+  });
+
+  document.getElementById('dialogueTip').innerHTML = '💡 ' + d.tip;
+
+  document.getElementById('dlgPrevBtn').disabled = dialogueIdx === 0;
+  document.getElementById('dlgNextBtn').disabled = dialogueIdx === DIALOGUES.length - 1;
+}
+
+document.getElementById('dlgPrevBtn').addEventListener('click', () => {
+  if (dialogueIdx > 0) { dialogueIdx--; renderDialogue(); }
+});
+document.getElementById('dlgNextBtn').addEventListener('click', () => {
+  if (dialogueIdx < DIALOGUES.length - 1) { dialogueIdx++; renderDialogue(); }
+});
+
+renderDialogue();
+
+/* ================ MODE: TIC-TAC-TOE VOCABULARY ================ */
+const TTT_VOCAB_SETS = [
+  // Set 1: greetings + feelings
+  [
+    ['Good morning', '早安'],
+    ['Goodbye',      '再見'],
+    ['Hello',        '你好'],
+    ['Teacher',      '老師'],
+    ['Friend',       '朋友'],
+    ['Happy',        '開心'],
+    ['Great',        '很棒'],
+    ['School',       '學校'],
+    ['Love',         '愛'],
+  ],
+  // Set 2: actions & polite words
+  [
+    ['Play',         '玩'],
+    ['Sing',         '唱歌'],
+    ['Read',         '讀書'],
+    ['Draw',         '畫畫'],
+    ['Listen',       '聽'],
+    ['Share',        '分享'],
+    ['Good',         '好'],
+    ['Thank you',    '謝謝'],
+    ['Please',       '請'],
+  ],
+  // Set 3: people & things at school
+  [
+    ['Mommy',        '媽媽'],
+    ['Daddy',        '爸爸'],
+    ['Classmate',    '同學'],
+    ['Book',         '書本'],
+    ['Desk',         '書桌'],
+    ['Chair',        '椅子'],
+    ['Crayon',       '蠟筆'],
+    ['Lunch',        '午餐'],
+    ['Nap',          '午睡'],
+  ],
+];
+
+const tttBoard      = document.getElementById('tttBoard');
+const tttStatus     = document.getElementById('tttStatus');
+const tttP1         = document.getElementById('ttt-p1');
+const tttP2         = document.getElementById('ttt-p2');
+const tttResetBtn   = document.getElementById('tttResetBtn');
+const tttShuffleBtn = document.getElementById('tttShuffleBtn');
+
+let tttSetIdx = 0, tttCells = [], tttTurn = 1, tttOver = false, tttWords = [];
+
+function tttShuffleArr(a){
+  const b=[...a];
+  for(let i=b.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [b[i],b[j]]=[b[j],b[i]];
+  }
+  return b;
+}
+function tttRenderBoard(words){
+  tttBoard.innerHTML = '';
+  tttWords = words;
+  for(let i=0;i<9;i++){
+    const cell = document.createElement('div');
+    cell.className = 'ttt-cell';
+    cell.dataset.idx = i;
+    cell.dataset.enword = words[i][0];
+    cell.innerHTML = `<div class="word-en">${words[i][0]}</div><div class="word-cn">${words[i][1]}</div>`;
+    cell.addEventListener('click', () => tttOnClick(i));
+    tttBoard.appendChild(cell);
+  }
+}
+
+/* 念出單字：優先使用本地錄好的 mp3/m4a，沒有時退回瀏覽器 TTS（挑最自然的聲音） */
+let _tttCachedVoice = undefined;
+
+function tttPickBestEnVoice() {
+  const voices = window.speechSynthesis.getVoices();
+  if (!voices || !voices.length) return null;
+  const enVoices = voices.filter(v => /^en[-_]?/i.test(v.lang));
+  if (!enVoices.length) return null;
+  const namePriority = [
+    /ava.*\(premium\)/i,
+    /samantha.*\(enhanced\)/i,
+    /ava.*\(enhanced\)/i,
+    /^siri/i,
+    /karen.*\((premium|enhanced)\)/i,
+    /allison.*\(enhanced\)/i,
+    /microsoft.*aria.*natural/i,
+    /microsoft.*jenny.*natural/i,
+    /google.*us.*english/i,
+    /\((premium|enhanced)\)/i,
+    /samantha/i,
+  ];
+  for (const regex of namePriority) {
+    const found = enVoices.find(v => regex.test(v.name));
+    if (found) return found;
+  }
+  return enVoices.find(v => /en-?US/i.test(v.lang)) || enVoices[0] || null;
+}
+
+const _tttAudioCache = {};
+function tttTryLocalAudio(word) {
+  return new Promise((resolve) => {
+    if (_tttAudioCache[word] === false) { resolve(null); return; }
+    if (_tttAudioCache[word]) { resolve(_tttAudioCache[word].cloneNode()); return; }
+    const safeName = word.toLowerCase().replace(/[^a-z0-9_\- ]/g, '').replace(/ +/g, '_');
+    if (!safeName) { resolve(null); return; }
+    // 依序嘗試：.mp3（edge-tts 微軟小女孩聲）→ .m4a（Mac say）
+    const candidates = ['vocab/' + safeName + '.mp3', 'vocab/' + safeName + '.m4a'];
+    let idx = 0;
+    let allDone = false;
+    const tryNext = () => {
+      if (allDone) return;
+      if (idx >= candidates.length) {
+        allDone = true;
+        _tttAudioCache[word] = false;
+        resolve(null);
+        return;
+      }
+      const url = candidates[idx++];
+      const a = new Audio();
+      a.preload = 'metadata';
+      let settled = false;
+      const decide = () => {
+        if (settled || allDone) return;
+        settled = true;
+        if (!a.error && a.duration > 0.1 && isFinite(a.duration)) {
+          allDone = true;
+          _tttAudioCache[word] = a;
+          resolve(a.cloneNode());
+        } else {
+          tryNext();
+        }
+      };
+      a.addEventListener('loadedmetadata', decide, { once: true });
+      a.addEventListener('canplaythrough', decide, { once: true });
+      a.addEventListener('error', () => {
+        if (settled || allDone) return;
+        settled = true;
+        tryNext();
+      }, { once: true });
+      a.src = url;
+      setTimeout(() => {
+        if (settled || allDone) return;
+        settled = true;
+        tryNext();
+      }, 600);
+    };
+    tryNext();
+  });
+}
+
+async function tttSpeakWord(word){
+  try {
+    const local = await tttTryLocalAudio(word);
+    if (local) {
+      local.play().catch(() => speakViaTTS(word));
+      return;
+    }
+  } catch(e) {}
+  speakViaTTS(word);
+}
+
+function speakViaTTS(word){
+  if(!('speechSynthesis' in window)) return;
+  try {
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(word);
+    u.lang = 'en-US';
+    u.rate = 0.88;
+    u.pitch = 1.0;
+    if (_tttCachedVoice === undefined) {
+      _tttCachedVoice = tttPickBestEnVoice();
+    }
+    if (_tttCachedVoice) u.voice = _tttCachedVoice;
+    window.speechSynthesis.speak(u);
+  } catch(e) { console.warn('TTS error', e); }
+}
+
+if ('speechSynthesis' in window && 'onvoiceschanged' in window.speechSynthesis) {
+  window.speechSynthesis.addEventListener('voiceschanged', () => {
+    _tttCachedVoice = tttPickBestEnVoice();
+  });
+}
+function tttUpdateTurn(){
+  tttP1.classList.toggle('active', tttTurn === 1 && !tttOver);
+  tttP2.classList.toggle('active', tttTurn === 2 && !tttOver);
+  if(!tttOver){
+    tttStatus.className = 'ttt-status';
+    tttStatus.textContent = tttTurn === 1
+      ? '🔴 玩家 1 的回合 — 先唸出單字再點格子！'
+      : '🔵 玩家 2 的回合 — Say the word first!';
+  }
+}
+const TTT_LINES = [
+  [0,1,2],[3,4,5],[6,7,8],
+  [0,3,6],[1,4,7],[2,5,8],
+  [0,4,8],[2,4,6]
+];
+function tttCheckWin(){
+  for(const line of TTT_LINES){
+    const [a,b,c] = line;
+    if(tttCells[a] && tttCells[a]===tttCells[b] && tttCells[a]===tttCells[c]){
+      return { winner: tttCells[a], line };
+    }
+  }
+  if(tttCells.every(v => v !== 0)) return { winner: 0, line: null };
+  return null;
+}
+function tttOnClick(i){
+  if(tttOver || tttCells[i] !== 0) return;
+  if(tttWords[i]) tttSpeakWord(tttWords[i][0]);
+  tttCells[i] = tttTurn;
+  const cell = tttBoard.children[i];
+  cell.classList.add('claimed');
+  const mark = document.createElement('div');
+  mark.className = 'mark ' + (tttTurn === 1 ? 'p1' : 'p2');
+  mark.textContent = tttTurn === 1 ? 'O' : 'X';
+  cell.appendChild(mark);
+
+  const res = tttCheckWin();
+  if(res){
+    tttOver = true;
+    if(res.winner === 0){
+      tttStatus.textContent = '🤝 平手！再來一局？';
+      tttStatus.className = 'ttt-status draw';
+    } else {
+      tttStatus.textContent = res.winner === 1 ? '🎉 玩家 1 贏了！' : '🎉 玩家 2 贏了！';
+      tttStatus.className = 'ttt-status ' + (res.winner === 1 ? 'win-p1' : 'win-p2');
+      res.line.forEach(idx => tttBoard.children[idx].classList.add('win'));
+    }
+    tttP1.classList.remove('active');
+    tttP2.classList.remove('active');
+  } else {
+    tttTurn = tttTurn === 1 ? 2 : 1;
+    tttUpdateTurn();
+  }
+}
+function tttResetGame(reshuffleSet = false){
+  tttCells = new Array(9).fill(0);
+  tttTurn = 1;
+  tttOver = false;
+  if(reshuffleSet) tttSetIdx = (tttSetIdx + 1) % TTT_VOCAB_SETS.length;
+  const words = tttShuffleArr(TTT_VOCAB_SETS[tttSetIdx]);
+  tttRenderBoard(words);
+  tttUpdateTurn();
+}
+tttResetBtn.addEventListener('click',   () => tttResetGame(false));
+tttShuffleBtn.addEventListener('click', () => tttResetGame(true));
+tttResetGame(false);
+
+
+/* ================ MODE: PARENT-CHILD MISSIONS ================ */
+const MISSIONS = [
+  {
+    color: '#5a6fd4',
+    titleCn: '任務 1：發明我們的「再見儀式」',
+    titleEn: 'Mission 1 — Invent our goodbye ritual',
+    why:   '分離焦慮不是孩子不勇敢，是他還在學「爸媽不見了還會回來」。一個固定的再見儀式，給他一個可以握住的「儀式感」，比一句「乖乖去」有用很多。',
+    how:   '和孩子一起發明一個三步驟的告別：抱一下、碰碰額頭、說一句專屬暗號（例如「I love you to the moon!」）。上學前一晚先在家練一次。',
+    stuck: '孩子哭著不讓你走 → 不要偷偷溜走。蹲下來做完儀式，說「下午點心後我就來」，然後果斷離開。拖延反而讓他更焦慮。',
+    cheer: '回家路上：「今天早上我們做了再見儀式對不對？你很棒。」讓他知道儀式是他們兩人之間的秘密。',
+  },
+  {
+    color: '#4fbfa8',
+    titleCn: '任務 2：記住一個新朋友或老師的名字',
+    titleEn: 'Mission 2 — Remember one new name',
+    why:   '對 3 歲的孩子，「人」比抽象的規則重要。能叫出一個名字，他就在新環境裡多了一個錨點。這是建立安全感最快的方法。',
+    how:   '接他放學時問：「今天有一個新朋友對你很好嗎？他叫什麼名字？」如果他說不出來，明天早上偷偷看名牌，一起記三個。',
+    stuck: '他害羞、還沒交到朋友 → 完全正常。改成記老師的名字：「老師今天穿什麼顏色的衣服？」具象的細節比較好抓住。',
+    cheer: '晚餐時跟爸爸/媽媽說：「你猜孩子今天記得誰的名字？」讓他當小主角重述，他就把這個名字變成自己的了。',
+  },
+  {
+    color: '#f28c8c',
+    titleCn: '任務 3：幫孩子把心情說出來',
+    titleEn: 'Mission 3 — Put feelings into words',
+    why:   '3–4 歲的情緒像一團霧 —— 他還沒有詞可以指認「我害怕」「我想家」。爸媽的任務不是消除情緒，是幫他找到詞。有詞的情緒，才不會變成咬人、尖叫、賴地板。',
+    how:   '回家路上玩「心情天氣」：「今天你的心是大太陽、小雨、還是有一點點雲？」用天氣當比喻，比直接問「開心嗎」更容易回答。',
+    stuck: '他說「我不知道」→ 不要追問。爸媽先示範：「媽媽今天是有一點點雲的，因為…」讓他知道情緒可以被說出來，而且不會被評價。',
+    cheer: '他主動跟你說一句「我今天有一點怕怕」→ 蹲下來抱他，說「謝謝你告訴我。我聽到了。」這一句勝過一百句「沒事啦」。',
+  },
+];
+const missionList = document.getElementById('missionList');
+MISSIONS.forEach((m, idx) => {
+  const card = document.createElement('div');
+  card.className = 'mission-card' + (idx === 0 ? ' open' : '');
+  card.innerHTML = `
+    <div class="mission-head" style="background:${m.color};">
+      <div class="num" style="color:${m.color};">${idx + 1}</div>
+      <div class="titles">
+        <span class="title-cn">${m.titleCn}</span>
+        <span class="title-en">${m.titleEn}</span>
+      </div>
+      <div class="arrow">▾</div>
+    </div>
+    <div class="mission-body">
+      <div class="mission-section">
+        <span class="ms-label why">為什麼這樣做 · Why</span>
+        <div class="ms-body">${m.why}</div>
+      </div>
+      <div class="mission-section">
+        <span class="ms-label how">怎麼開始 · How to start</span>
+        <div class="ms-body">${m.how}</div>
+      </div>
+      <div class="mission-section">
+        <span class="ms-label stuck">卡住了怎麼辦 · If stuck</span>
+        <div class="ms-body">${m.stuck}</div>
+      </div>
+      <div class="mission-section">
+        <span class="ms-label cheer">完成時的慶祝 · Celebrate</span>
+        <div class="ms-body">${m.cheer}</div>
+      </div>
+    </div>
+  `;
+  card.querySelector('.mission-head').addEventListener('click', () => {
+    card.classList.toggle('open');
+  });
+  missionList.appendChild(card);
+});
+
+const TRACKER_ROWS = [
+  '早上說再見，我沒有哭太久',
+  '我認識一個新的名字',
+  '我跟爸媽說了今天的心情',
+  '我帶著喜歡的東西上學（可選）',
+];
+const TRACKER_DAYS = ['一','二','三','四','五','六','日'];
+const trackerState = {};
+const trackerGrid = document.getElementById('trackerGrid');
+const headerCell = document.createElement('div');
+headerCell.className = 'row-label';
+headerCell.innerHTML = '<span style="font-size:0.85em;color:#999;">這週的小目標</span>';
+trackerGrid.appendChild(headerCell);
+TRACKER_DAYS.forEach(d => {
+  const dh = document.createElement('div');
+  dh.className = 'day-head';
+  dh.textContent = d;
+  trackerGrid.appendChild(dh);
+});
+TRACKER_ROWS.forEach((label, ri) => {
+  const l = document.createElement('div');
+  l.className = 'row-label';
+  l.textContent = label;
+  trackerGrid.appendChild(l);
+  for (let ci = 0; ci < 7; ci++) {
+    const box = document.createElement('div');
+    box.className = 'tracker-check';
+    const key = `${ri}-${ci}`;
+    box.addEventListener('click', () => {
+      trackerState[key] = !trackerState[key];
+      box.classList.toggle('checked', !!trackerState[key]);
+    });
+    trackerGrid.appendChild(box);
+  }
+});
+
+/* ==========================================================
+   💬 PARENT MESSAGE BOARD
+   ==========================================================
+   要讓不同家長看到彼此的留言 → 上 Firebase（照 Firebase 設定指南做）
+   沒設定時自動用 localStorage（只在這台瀏覽器看得到自己的留言）
+   ========================================================== */
+const BOARD_BOOK_ID = 'i-love-school';
+const BOARD_FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDZAap-3IwaHO7eXTjETH4KpVsMntsvIGk",
+  authDomain: "picture-book-board.firebaseapp.com",
+  projectId: "picture-book-board",
+  appId: "1:218826557358:web:7eab48cab9adccb1116a3f",
+};
+const BOARD_TAGS = ['分離焦慮','交朋友','老師互動','早上出門','情緒','鼓勵小撇步','其他'];
+
+let boardMode = 'local';       // 'firestore' | 'local'
+let boardDb = null;
+let boardUnsub = null;
+let boardFilter = '';
+let boardCache = [];
+let boardLiked = new Set(JSON.parse(localStorage.getItem('pb_liked_'+BOARD_BOOK_ID) || '[]'));
+let boardInitialized = false;
+
+function boardEscapeHTML(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function boardTimeAgo(ts) {
+  if (!ts) return '';
+  const diff = Date.now() - ts;
+  if (diff < 0) return '剛剛';
+  const min = Math.floor(diff / 60000);
+  if (min < 1) return '剛剛';
+  if (min < 60) return min + ' 分鐘前';
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return hr + ' 小時前';
+  const d = Math.floor(hr / 24);
+  if (d < 30) return d + ' 天前';
+  return new Date(ts).toLocaleDateString('zh-TW');
+}
+
+function boardSetStatus(mode) {
+  const el = document.getElementById('boardStatus');
+  if (!el) return;
+  if (mode === 'online') {
+    el.className = 'board-status online';
+    el.innerHTML = '🌐 <strong>線上模式</strong>：所有家長看到同一份留言板，送出後即時同步。';
+  } else {
+    el.className = 'board-status local';
+    el.innerHTML = '💾 <strong>本機預覽模式</strong>：留言目前只存在你這台電腦的瀏覽器裡，其他家長看不到。'
+      + '想讓大家共用，請按「<em>Firebase 設定指南</em>」的三步驟設定 Firebase，再回來。';
+  }
+}
+
+function boardRenderControls() {
+  const sel = document.getElementById('boardTag');
+  sel.innerHTML = '<option value="">選一個主題（選填）…</option>'
+    + BOARD_TAGS.map(t => `<option value="${t}">${t}</option>`).join('');
+  const fil = document.getElementById('boardFilter');
+  fil.innerHTML = '<span>篩選：</span><button class="filter-chip active" data-tag="">全部</button>'
+    + BOARD_TAGS.map(t => `<button class="filter-chip" data-tag="${t}">${t}</button>`).join('');
+  fil.addEventListener('click', (e) => {
+    const btn = e.target.closest('.filter-chip');
+    if (!btn) return;
+    fil.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    boardFilter = btn.dataset.tag;
+    boardRenderList();
+  });
+
+  const text = document.getElementById('boardText');
+  const count = document.getElementById('boardCount');
+  text.addEventListener('input', () => {
+    count.textContent = text.value.length + ' / 500';
+  });
+  document.getElementById('boardPost').addEventListener('click', boardPostNew);
+}
+
+async function boardPostNew() {
+  const text = document.getElementById('boardText');
+  const body = text.value.trim();
+  if (!body) { alert('先寫點東西吧！'); return; }
+  const nick = (document.getElementById('boardNick').value.trim() || '匿名家長').slice(0, 20);
+  const tag = document.getElementById('boardTag').value;
+
+  const btn = document.getElementById('boardPost');
+  btn.disabled = true; btn.textContent = '送出中…';
+  try {
+    if (boardMode === 'firestore') {
+      await boardDb.collection('pb_board_' + BOARD_BOOK_ID).add({
+        nickname: nick, text: body, tag, likes: 0, replies: [],
+        ts: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+    } else {
+      const all = boardLoadLocal();
+      all.unshift({
+        id: 'local_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+        nickname: nick, text: body, tag, likes: 0, replies: [], ts: Date.now(),
+      });
+      boardSaveLocal(all);
+      boardCache = all;
+      boardRenderList();
+    }
+    text.value = '';
+    document.getElementById('boardTag').value = '';
+    document.getElementById('boardCount').textContent = '0 / 500';
+  } catch (err) {
+    console.error(err);
+    alert('送出失敗：' + (err.message || err));
+  } finally {
+    btn.disabled = false; btn.textContent = '送出分享';
+  }
+}
+
+function boardLoadLocal() {
+  try { return JSON.parse(localStorage.getItem('pb_board_' + BOARD_BOOK_ID) || '[]'); }
+  catch { return []; }
+}
+function boardSaveLocal(arr) {
+  localStorage.setItem('pb_board_' + BOARD_BOOK_ID, JSON.stringify(arr.slice(0, 200)));
+}
+
+function boardRenderList() {
+  const list = document.getElementById('boardList');
+  let arr = boardCache;
+  if (boardFilter) arr = arr.filter(x => x.tag === boardFilter);
+  if (!arr.length) {
+    list.innerHTML = '<div class="empty">'
+      + (boardFilter ? '目前沒有「'+boardEscapeHTML(boardFilter)+'」主題的留言。' : '還沒有留言，歡迎第一個分享心得！')
+      + '</div>';
+    return;
+  }
+  list.innerHTML = arr.map(item => {
+    const liked = boardLiked.has(item.id);
+    const replies = (item.replies || []).map(r => `
+      <div class="reply">
+        <div class="reply-meta"><b>${boardEscapeHTML(r.nickname || '匿名家長')}</b> · ${boardTimeAgo(r.ts)}</div>
+        <div class="reply-text">${boardEscapeHTML(r.text)}</div>
+      </div>`).join('');
+    return `
+      <div class="board-card" data-id="${boardEscapeHTML(item.id)}">
+        <div class="card-head">
+          <span class="nick">${boardEscapeHTML(item.nickname || '匿名家長')}</span>
+          ${item.tag ? `<span class="tag-chip">${boardEscapeHTML(item.tag)}</span>` : ''}
+          <span class="time">${boardTimeAgo(item.ts)}</span>
+        </div>
+        <div class="card-text">${boardEscapeHTML(item.text)}</div>
+        <div class="card-actions">
+          <button class="heart${liked ? ' liked' : ''}" data-act="like" data-id="${boardEscapeHTML(item.id)}">
+            ♥ <span class="like-count">${item.likes || 0}</span>
+          </button>
+          <button class="reply-btn" data-act="reply-toggle" data-id="${boardEscapeHTML(item.id)}">回覆 (${(item.replies||[]).length})</button>
+        </div>
+        ${replies ? `<div class="replies">${replies}</div>` : ''}
+        <div class="reply-box" id="replybox-${boardEscapeHTML(item.id)}" style="display:none;">
+          <input class="reply-nick" placeholder="暱稱（空白=匿名）" maxlength="20">
+          <textarea class="reply-text-input" placeholder="寫下你的回覆…" maxlength="300"></textarea>
+          <div class="reply-foot">
+            <button class="reply-cancel" data-act="reply-cancel" data-id="${boardEscapeHTML(item.id)}">取消</button>
+            <button class="reply-send" data-act="reply-send" data-id="${boardEscapeHTML(item.id)}">送出回覆</button>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+
+  list.querySelectorAll('[data-act]').forEach(btn => {
+    btn.addEventListener('click', boardHandleAction);
+  });
+}
+
+async function boardHandleAction(e) {
+  const btn = e.currentTarget;
+  const act = btn.dataset.act;
+  const id = btn.dataset.id;
+  if (act === 'like') {
+    if (boardLiked.has(id)) return;
+    boardLiked.add(id);
+    localStorage.setItem('pb_liked_'+BOARD_BOOK_ID, JSON.stringify([...boardLiked]));
+    btn.classList.add('liked');
+    const c = btn.querySelector('.like-count');
+    c.textContent = parseInt(c.textContent || '0', 10) + 1;
+    if (boardMode === 'firestore') {
+      try {
+        await boardDb.collection('pb_board_'+BOARD_BOOK_ID).doc(id).update({
+          likes: firebase.firestore.FieldValue.increment(1)
+        });
+      } catch (err) { console.warn('like update failed', err); }
+    } else {
+      const all = boardLoadLocal();
+      const it = all.find(x => x.id === id);
+      if (it) { it.likes = (it.likes||0)+1; boardSaveLocal(all); }
+    }
+  } else if (act === 'reply-toggle') {
+    const box = document.getElementById('replybox-' + id);
+    box.style.display = box.style.display === 'none' ? 'block' : 'none';
+  } else if (act === 'reply-cancel') {
+    document.getElementById('replybox-' + id).style.display = 'none';
+  } else if (act === 'reply-send') {
+    const box = document.getElementById('replybox-' + id);
+    const nick = (box.querySelector('.reply-nick').value.trim() || '匿名家長').slice(0, 20);
+    const txt = box.querySelector('.reply-text-input').value.trim();
+    if (!txt) { alert('先寫點東西吧！'); return; }
+    const reply = { nickname: nick, text: txt, ts: Date.now() };
+    if (boardMode === 'firestore') {
+      try {
+        await boardDb.collection('pb_board_'+BOARD_BOOK_ID).doc(id).update({
+          replies: firebase.firestore.FieldValue.arrayUnion(reply)
+        });
+      } catch (err) { alert('送出失敗：' + err.message); return; }
+    } else {
+      const all = boardLoadLocal();
+      const it = all.find(x => x.id === id);
+      if (it) {
+        it.replies = it.replies || [];
+        it.replies.push(reply);
+        boardSaveLocal(all);
+        boardCache = all;
+        boardRenderList();
+      }
+    }
+    box.querySelector('.reply-text-input').value = '';
+    box.style.display = 'none';
+  }
+}
+
+function boardInit() {
+  boardRenderControls();
+  const hasConfig = BOARD_FIREBASE_CONFIG && BOARD_FIREBASE_CONFIG.apiKey;
+  if (hasConfig && typeof firebase !== 'undefined' && firebase.initializeApp) {
+    try {
+      firebase.initializeApp(BOARD_FIREBASE_CONFIG);
+      boardDb = firebase.firestore();
+      boardMode = 'firestore';
+      boardSetStatus('online');
+      boardUnsub = boardDb.collection('pb_board_' + BOARD_BOOK_ID)
+        .orderBy('ts', 'desc')
+        .limit(200)
+        .onSnapshot(snap => {
+          boardCache = snap.docs.map(d => {
+            const data = d.data();
+            return {
+              id: d.id,
+              nickname: data.nickname,
+              text: data.text,
+              tag: data.tag,
+              likes: data.likes || 0,
+              replies: data.replies || [],
+              ts: (data.ts && data.ts.toMillis) ? data.ts.toMillis() : (data.ts || Date.now()),
+            };
+          });
+          boardRenderList();
+        }, err => {
+          console.error('Firestore listener error, falling back to local:', err);
+          boardMode = 'local';
+          boardSetStatus('local');
+          boardCache = boardLoadLocal();
+          boardRenderList();
+        });
+    } catch (err) {
+      console.warn('Firebase init failed, using local mode:', err);
+      boardMode = 'local';
+      boardSetStatus('local');
+      boardCache = boardLoadLocal();
+      boardRenderList();
+    }
+  } else {
+    boardMode = 'local';
+    boardSetStatus('local');
+    boardCache = boardLoadLocal();
+    boardRenderList();
+  }
+}
+
+document.querySelectorAll('[data-mode="board"]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (!boardInitialized) {
+      boardInit();
+      boardInitialized = true;
+    }
+  });
+});
+</script>
+
+<footer class="site-footer">
+  <div class="sf-main">亞洲大學幼兒教育學系　幼兒教育科技實驗室</div>
+  <div class="sf-sub-label">本數位教材受到以下計畫補助設計開發</div>
+  <div class="sf-grants">
+    <p>教育部：與智慧科技共學：偏鄉國中與社區高中語言學伴培育計畫</p>
+    <p>國科會：機器人結合 AI 教學代理人促進幼兒社會情緒學習之設計、開發與評估</p>
+  </div>
+</footer>
+
+</body>
+</html>

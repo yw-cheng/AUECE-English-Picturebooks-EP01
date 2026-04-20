@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>幼兒英語互動繪本 · 例行性活動系列</title>
+<meta name="description" content="五本幼兒英語互動繪本：上學、午餐、洗手、午休、回家 — 每本書都附有點讀、單字遊戲、句子排序、主題曲、家長留言板。">
+<style>
+  :root {
+    --bg: #FFF8EC;
+    --ink: #4A3520;
+    --ink-soft: #7A5D42;
+    --accent: #FF8A3D;
+    --accent-soft: #FFD6A8;
+    --card: #FFFFFF;
+    --shadow: 0 4px 14px rgba(74, 53, 32, 0.08);
+    --shadow-hover: 0 10px 28px rgba(74, 53, 32, 0.16);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Noto Sans TC", "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 48px 24px 64px;
+  }
+  header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  header h1 {
+    font-size: 2.25rem;
+    margin: 0 0 12px;
+    letter-spacing: 0.02em;
+  }
+  header .subtitle {
+    font-size: 1.05rem;
+    color: var(--ink-soft);
+    margin: 0 0 18px;
+  }
+  header .tagline {
+    display: inline-block;
+    background: var(--accent-soft);
+    color: var(--ink);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 24px;
+  }
+  .card {
+    background: var(--card);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: inherit;
+  }
+  .card:hover, .card:focus-visible {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-hover);
+    outline: none;
+  }
+  .card .cover {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    background: #EADFCF center/cover no-repeat;
+    display: block;
+  }
+  .card .body {
+    padding: 18px 20px 22px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .card h2 {
+    font-size: 1.25rem;
+    margin: 0 0 4px;
+    letter-spacing: 0.01em;
+  }
+  .card .zh {
+    font-size: 0.95rem;
+    color: var(--ink-soft);
+    margin: 0 0 12px;
+  }
+  .card .desc {
+    font-size: 0.9rem;
+    color: var(--ink-soft);
+    margin: 0 0 16px;
+    flex: 1;
+  }
+  .card .read-btn {
+    align-self: flex-start;
+    background: var(--accent);
+    color: #FFF;
+    padding: 8px 18px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.92rem;
+    letter-spacing: 0.03em;
+  }
+
+  .info {
+    margin-top: 56px;
+    padding: 24px 28px;
+    background: #FFF;
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+  }
+  .info h3 {
+    margin: 0 0 12px;
+    font-size: 1.15rem;
+  }
+  .info ul {
+    margin: 0;
+    padding-left: 20px;
+    color: var(--ink-soft);
+  }
+  .info li { margin: 4px 0; }
+
+  footer {
+    margin-top: 40px;
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: 0.85rem;
+  }
+  footer .attribution {
+    margin-top: 22px;
+    padding-top: 22px;
+    border-top: 1px solid #EADFCF;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  footer .attribution .org {
+    font-weight: 600;
+    color: var(--ink);
+    font-size: 0.95rem;
+    margin: 0 0 6px;
+  }
+  footer .attribution .grants-intro {
+    margin: 0;
+    opacity: 0.8;
+  }
+  footer .attribution .grant {
+    margin: 0;
+    opacity: 0.85;
+    line-height: 1.55;
+  }
+  footer .attribution .grant .funder {
+    display: inline-block;
+    background: var(--accent-soft);
+    color: var(--ink);
+    padding: 1px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+    margin-right: 6px;
+    font-size: 0.82rem;
+  }
+
+  @media (max-width: 540px) {
+    .wrap { padding: 32px 18px 48px; }
+    header h1 { font-size: 1.75rem; }
+    .grid { gap: 16px; }
+    .card .body { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>🌻 幼兒英語互動繪本</h1>
+    <p class="subtitle">幼兒園例行性活動 · 五本一系列</p>
+    <span class="tagline">點讀 · 單字遊戲 · 句子排序 · 主題曲 · 家長留言板</span>
+  </header>
+
+  <main class="grid">
+
+    <a class="card" href="./my-first-day-at-school/index.html">
+      <div class="cover" style="background-image: url('./my-first-day-at-school/pictures/p01.png');"></div>
+      <div class="body">
+        <h2>My First Day at School</h2>
+        <p class="zh">第一天上學</p>
+        <p class="desc">打招呼、認識老師、交新朋友 — 陪孩子度過開學焦慮的第一天。</p>
+        <span class="read-btn">開始閱讀 →</span>
+      </div>
+    </a>
+
+    <a class="card" href="./yummy-lunch-time/index.html">
+      <div class="cover" style="background-image: url('./yummy-lunch-time/pictures/p01.png');"></div>
+      <div class="body">
+        <h2>Yummy Lunch Time</h2>
+        <p class="zh">午餐時間</p>
+        <p class="desc">洗手、說謝謝、嘗試各種蔬菜 — 快樂又健康的用餐時光。</p>
+        <span class="read-btn">開始閱讀 →</span>
+      </div>
+    </a>
+
+    <a class="card" href="./wash-your-hands/index.html">
+      <div class="cover" style="background-image: url('./wash-your-hands/pictures/p01.png');"></div>
+      <div class="body">
+        <h2>Wash Your Hands</h2>
+        <p class="zh">洗手時間</p>
+        <p class="desc">搓泡泡、沖乾淨、變身 Health Hero — 養成勤洗手的好習慣。</p>
+        <span class="read-btn">開始閱讀 →</span>
+      </div>
+    </a>
+
+    <a class="card" href="./quietly-nap-time/index.html">
+      <div class="cover" style="background-image: url('./quietly-nap-time/pictures/p01.png');"></div>
+      <div class="body">
+        <h2>Quietly, Nap Time</h2>
+        <p class="zh">午休時間</p>
+        <p class="desc">小聲說話、閉上眼睛、好好睡一覺 — 學會安靜休息的溫柔節奏。</p>
+        <span class="read-btn">開始閱讀 →</span>
+      </div>
+    </a>
+
+    <a class="card" href="./time-to-go-home/index.html">
+      <div class="cover" style="background-image: url('./time-to-go-home/pictures/p01.png');"></div>
+      <div class="body">
+        <h2>Time to Go Home</h2>
+        <p class="zh">回家時間</p>
+        <p class="desc">收拾書包、跟老師說再見、期待明天 — 為美好的一天畫下句點。</p>
+        <span class="read-btn">開始閱讀 →</span>
+      </div>
+    </a>
+
+  </main>
+
+  <section class="info">
+    <h3>💡 每本繪本都有這些模式</h3>
+    <ul>
+      <li><strong>📖 點讀模式</strong>：點圖就發音，孩子可以跟著唸</li>
+      <li><strong>🎯 句子排序</strong>：把單字塊拖到正確位置，排出完整句子</li>
+      <li><strong>⭕ 單字圈叉</strong>：井字遊戲邊玩邊認單字</li>
+      <li><strong>🎵 主題曲</strong>：可愛童謠唱出故事主題</li>
+      <li><strong>📝 親子學習單</strong>：附 PDF 可列印，帶回家一起做</li>
+      <li><strong>💬 家長留言板</strong>：所有家長可以分享心得、互相鼓勵</li>
+    </ul>
+  </section>
+
+  <footer>
+    <p>適用年齡：2–6 歲 · 請用手機或電腦打開任何一本開始閱讀</p>
+    <div class="attribution">
+      <p class="org">亞洲大學幼兒教育學系　幼兒教育科技實驗室</p>
+      <p class="grants-intro">本數位教材受到以下計畫補助設計開發：</p>
+      <p class="grant"><span class="funder">教育部</span>與智慧科技共學：偏鄉國中與社區高中語言學伴培育計畫</p>
+      <p class="grant"><span class="funder">國科會</span>機器人結合 AI 教學代理人促進幼兒社會情緒學習之設計、開發與評估</p>
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>
